@@ -12,8 +12,8 @@
             <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">
                 Insulin Pen Prescription Calculator
             </h1>
-            
-            <!-- Input Form -->
+                
+                <!-- Input Form -->
             <div class="space-y-4 mb-6">
                 <div>
                     <label for="penSelect" class="block text-sm font-medium text-gray-700 mb-1">
@@ -25,6 +25,64 @@
                     >
                         <option value="">Select an insulin pen...</option>
                     </select>
+                </div>
+
+                <!-- Weight-Based Dosing Section -->
+                <div id="weightBasedDosing" class="bg-gray-50 rounded-lg p-4 mb-4 hidden">
+                    <h3 class="text-sm font-medium text-gray-700 mb-3">Weight-Based Dosing</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div>
+                            <label for="patientWeight" class="block text-sm font-medium text-gray-700 mb-1">
+                                Patient Weight
+                            </label>
+                            <div class="flex gap-2">
+                                <input 
+                                    type="number" 
+                                    id="patientWeight" 
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    placeholder="Enter weight"
+                                    min="1"
+                                    step="0.1"
+                                >
+                                <select id="weightUnit" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                    <option value="kg">kg</option>
+                                    <option value="lbs">lbs</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="dosingSlider" class="block text-sm font-medium text-gray-700 mb-1">
+                                Dosing (units/kg/day)
+                            </label>
+                            <input 
+                                type="range" 
+                                id="dosingSlider" 
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                min="0" 
+                                max="2" 
+                                step="1"
+                                value="0"
+                            >
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>0.1</span>
+                                <span>0.2</span>
+                                <span>0.3</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="text-gray-600">
+                            <span class="font-medium">Rate:</span>
+                            <span id="sliderValue" class="ml-2">0.1 u/kg/day</span>
+                        </div>
+                        <div class="text-gray-600">
+                            <span class="font-medium">Estimated dose:</span>
+                            <span id="estimatedDose" class="ml-2">-</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -98,6 +156,14 @@
                         step="0.1"
                         required
                     >
+                </div>
+
+                <!-- Pricing Information -->
+                <div id="pricingInfo" class="bg-green-50 border border-green-200 rounded-lg p-3 hidden">
+                    <div class="text-sm text-green-800">
+                        <span class="font-medium">💰 Pricing:</span>
+                        <span id="pricingText" class="ml-2">-</span>
+                    </div>
                 </div>
 
                 <button 

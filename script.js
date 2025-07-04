@@ -2,6 +2,7 @@ class InsulinCalculator {
     constructor() {
         this.initializeElements();
         this.bindEvents();
+        this.bindWeightSliderEvents();
     }
 
     initializeElements() {
@@ -30,6 +31,15 @@ class InsulinCalculator {
         this.pensPerBoxSpan = document.getElementById('pensPerBox');
         this.monthsPerBoxSpan = document.getElementById('monthsPerBox');
         
+        this.patientWeightInput = document.getElementById('patientWeight');
+        this.weightUnitSelect = document.getElementById('weightUnit');
+        this.dosingSlider = document.getElementById('dosingSlider');
+        this.sliderValueSpan = document.getElementById('sliderValue');
+        this.estimatedDoseSpan = document.getElementById('estimatedDose');
+        this.weightBasedDosingDiv = document.getElementById('weightBasedDosing');
+        this.pricingInfoDiv = document.getElementById('pricingInfo');
+        this.pricingTextSpan = document.getElementById('pricingText');
+        
         this.insulinPens = null;
         this.selectedPen = null;
         
@@ -56,7 +66,12 @@ class InsulinCalculator {
                 if (selectedPen) {
                     const penType = this.findPenType(selectedValue);
                     this.setPenValues(selectedPen.concentration, selectedPen.volume, penType);
+                    this.toggleWeightBasedDosing(penType);
+                    this.showPricingInfo(selectedValue, selectedPen);
                 }
+            } else {
+                this.toggleWeightBasedDosing(null);
+                this.showPricingInfo(null, null);
             }
         });
         
@@ -220,6 +235,16 @@ class InsulinCalculator {
                     this.penSelect.appendChild(optgroup);
                 }
             });
+            
+            // Set default selection to Lantus SoloStar
+            this.penSelect.value = 'lantus-solostar';
+            const defaultPen = this.findPenByValue('lantus-solostar');
+            if (defaultPen) {
+                const penType = this.findPenType('lantus-solostar');
+                this.setPenValues(defaultPen.concentration, defaultPen.volume, penType);
+                this.toggleWeightBasedDosing(penType);
+                this.showPricingInfo('lantus-solostar', defaultPen);
+            }
         } catch (error) {
             console.error('Error loading insulin pens:', error);
         }
@@ -291,6 +316,63 @@ class InsulinCalculator {
     hideDisclaimer() {
         this.disclaimerModal.classList.add('hidden');
         document.body.style.overflow = 'auto';
+    }
+
+    bindWeightSliderEvents() {
+        this.dosingSlider.addEventListener('input', () => this.calculateDoseFromSlider());
+        this.patientWeightInput.addEventListener('input', () => this.calculateDoseFromSlider());
+        this.weightUnitSelect.addEventListener('change', () => this.calculateDoseFromSlider());
+        
+        this.calculateDoseFromSlider();
+    }
+
+    calculateDoseFromSlider() {
+        const weight = parseFloat(this.patientWeightInput.value);
+        const sliderValue = parseInt(this.dosingSlider.value);
+        const weightUnit = this.weightUnitSelect.value;
+        
+        const dosingValues = [0.1, 0.2, 0.3];
+        const dosingRate = dosingValues[sliderValue];
+        
+        this.sliderValueSpan.textContent = `${dosingRate} u/kg/day`;
+        
+        if (weight && weight > 0) {
+            let weightInKg = weight;
+            if (weightUnit === 'lbs') {
+                weightInKg = weight * 0.4536;
+            }
+            
+            const dailyDose = Math.round(weightInKg * dosingRate);
+            this.estimatedDoseSpan.textContent = `${dailyDose} units`;
+            
+            this.setDoseFromWeight(dailyDose);
+        } else {
+            this.estimatedDoseSpan.textContent = '-';
+        }
+    }
+
+    setDoseFromWeight(dose) {
+        if (dose && dose > 0) {
+            this.unitsPerDoseInput.value = dose;
+            this.calculate();
+        }
+    }
+
+    toggleWeightBasedDosing(penType) {
+        if (penType === 'basal') {
+            this.weightBasedDosingDiv.classList.remove('hidden');
+        } else {
+            this.weightBasedDosingDiv.classList.add('hidden');
+        }
+    }
+
+    showPricingInfo(penValue, pen) {
+        if (penValue === 'lantus-solostar') {
+            this.pricingTextSpan.textContent = '$35/box with GoodRx';
+            this.pricingInfoDiv.classList.remove('hidden');
+        } else {
+            this.pricingInfoDiv.classList.add('hidden');
+        }
     }
 }
 
