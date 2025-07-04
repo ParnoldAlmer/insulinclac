@@ -1,0 +1,183 @@
+{
+  "basal": [
+    {
+      "value": "lantus-solostar",
+      "brand": "Lantus Solostar",
+      "generic": "Insulin glargine",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Long-acting",
+      "typeGroup": "basal",
+      "rxnorm_cui": 847230,
+      "ndc_codes": [
+        "0088-2219-05",
+        "0088-2219-00",
+        "0088-2219-01"
+      ],
+      "pens_per_box": 5
+    },
+    {
+      "value": "toujeo-solostar",
+      "brand": "Toujeo Solostar",
+      "generic": "Insulin glargine",
+      "concentration": 300,
+      "volume": 1.5,
+      "notes": "Long-acting, U-300",
+      "typeGroup": "basal",
+      "rxnorm_cui": 285018,
+      "ndc_codes": [
+        "0024-5869-03"
+      ],
+      "pens_per_box": 3
+    },
+    {
+      "value": "levemir-flextouch",
+      "brand": "Levemir FlexTouch",
+      "generic": "Insulin detemir",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Long-acting",
+      "typeGroup": "basal",
+      "rxnorm_cui": 139825,
+      "ndc_codes": [
+        "0169-6438-10"
+      ],
+      "pens_per_box": 5
+    },
+    {
+      "value": "tresiba-flextouch",
+      "brand": "Tresiba FlexTouch",
+      "generic": "Insulin degludec",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Long-acting",
+      "typeGroup": "basal",
+      "rxnorm_cui": 1670007,
+      "ndc_codes": [
+        "0169-2660-15"
+      ],
+      "pens_per_box": 5
+    },
+    {
+      "value": "tresiba-flextouch-u200",
+      "brand": "Tresiba FlexTouch U-200",
+      "generic": "Insulin degludec",
+      "concentration": 200,
+      "volume": 3,
+      "notes": "Long-acting, U-200",
+      "typeGroup": "basal",
+      "rxnorm_cui": 1670007,
+      "ndc_codes": [
+        "0169-2550-97"
+      ],
+      "pens_per_box": 5
+    },
+    {
+      "value": "basaglar-kwikpen",
+      "brand": "Basaglar KwikPen",
+      "generic": "Insulin glargine (biosimilar)",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Long-acting",
+      "typeGroup": "basal",
+      "rxnorm_cui": 1736863,
+      "ndc_codes": [
+        "0002-7715-59",
+        "0002-7715-01",
+        "0002-7715-63"
+      ],
+      "pens_per_box": 5
+    }
+  ],
+  "rapid": [
+    {
+      "value": "humalog-kwikpen",
+      "brand": "Humalog KwikPen",
+      "generic": "Insulin lispro",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Mealtime insulin",
+      "typeGroup": "rapid",
+      "rxnorm_cui": 1652640,
+      "ndc_codes": [
+        "0002-8799-01",
+        "0002-8799-61",
+        "0002-8799-59"
+      ],
+      "pens_per_box": 5
+    },
+    {
+      "value": "humalog-kwikpen-u200",
+      "brand": "Humalog KwikPen U-200",
+      "generic": "Insulin lispro",
+      "concentration": 200,
+      "volume": 3,
+      "notes": "Rapid-acting, U-200",
+      "typeGroup": "rapid",
+      "rxnorm_cui": 1652239,
+      "ndc_codes": [],
+      "pens_per_box": 5
+    },
+    {
+      "value": "novolog-flexpen",
+      "brand": "Novolog FlexPen",
+      "generic": "Insulin aspart",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Mealtime insulin",
+      "typeGroup": "rapid",
+      "rxnorm_cui": 1653204,
+      "ndc_codes": [
+        "00169633990",
+        "50090450000",
+        "00169633897",
+        "00169210112"
+      ],
+      "pens_per_box": 5
+    },
+    {
+      "value": "admelog-solostar",
+      "brand": "Admelog SoloStar",
+      "generic": "Insulin lispro (biosimilar)",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Rapid-acting",
+      "typeGroup": "rapid",
+      "rxnorm_cui": null,
+      "ndc_codes": [
+        "00024-5925-05"
+      ],
+      "pens_per_box": 5
+    },
+    {
+      "value": "apidra-solostar",
+      "brand": "Apidra SoloStar",
+      "generic": "Insulin glulisine",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Rapid-acting",
+      "typeGroup": "rapid",
+      "rxnorm_cui": 803194,
+      "ndc_codes": [
+        "00088-2502-05"
+      ],
+      "pens_per_box": 5
+    }
+  ],
+  "ultra-rapid": [
+    {
+      "value": "fiasp-flextouch",
+      "brand": "Fiasp FlexTouch",
+      "generic": "Insulin aspart",
+      "concentration": 100,
+      "volume": 3,
+      "notes": "Ultra-fast-acting",
+      "typeGroup": "ultra-rapid",
+      "rxnorm_cui": 1653202,
+      "ndc_codes": [
+        "0169-3204-15"
+      ],
+      "pens_per_box": 5
+    }
+  ]
+}
