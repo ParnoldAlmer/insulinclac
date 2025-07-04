@@ -32,7 +32,7 @@ class InsulinCalculator {
         this.monthsPerBoxSpan = document.getElementById('monthsPerBox');
         
         this.patientWeightInput = document.getElementById('patientWeight');
-        this.weightUnitSelect = document.getElementById('weightUnit');
+        this.weightUnitToggle = document.getElementById('weightUnitToggle');
         this.dosingSlider = document.getElementById('dosingSlider');
         this.sliderValueSpan = document.getElementById('sliderValue');
         this.estimatedDoseSpan = document.getElementById('estimatedDose');
@@ -321,7 +321,7 @@ class InsulinCalculator {
     bindWeightSliderEvents() {
         this.dosingSlider.addEventListener('input', () => this.calculateDoseFromSlider());
         this.patientWeightInput.addEventListener('input', () => this.calculateDoseFromSlider());
-        this.weightUnitSelect.addEventListener('change', () => this.calculateDoseFromSlider());
+        this.weightUnitToggle.addEventListener('click', () => this.toggleWeightUnit());
         
         this.calculateDoseFromSlider();
     }
@@ -329,7 +329,7 @@ class InsulinCalculator {
     calculateDoseFromSlider() {
         const weight = parseFloat(this.patientWeightInput.value);
         const sliderValue = parseInt(this.dosingSlider.value);
-        const weightUnit = this.weightUnitSelect.value;
+        const weightUnit = this.weightUnitToggle.dataset.unit;
         
         const dosingValues = [0.1, 0.2, 0.3];
         const dosingRate = dosingValues[sliderValue];
@@ -373,6 +373,16 @@ class InsulinCalculator {
         } else {
             this.pricingInfoDiv.classList.add('hidden');
         }
+    }
+
+    toggleWeightUnit() {
+        const currentUnit = this.weightUnitToggle.dataset.unit;
+        const newUnit = currentUnit === 'kg' ? 'lbs' : 'kg';
+        
+        this.weightUnitToggle.dataset.unit = newUnit;
+        this.weightUnitToggle.textContent = newUnit;
+        
+        this.calculateDoseFromSlider();
     }
 }
 
