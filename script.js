@@ -14,6 +14,11 @@ class InsulinCalculator {
         this.calculateBtn = document.getElementById('calculateBtn');
         this.copyBtn = document.getElementById('copyBtn');
         
+        this.disclaimerBtn = document.getElementById('disclaimerBtn');
+        this.disclaimerModal = document.getElementById('disclaimerModal');
+        this.closeModal = document.getElementById('closeModal');
+        this.closeModalBtn = document.getElementById('closeModalBtn');
+        
         this.resultsDiv = document.getElementById('results');
         this.errorDiv = document.getElementById('errorMessage');
         this.totalUnitsSpan = document.getElementById('totalUnits');
@@ -34,6 +39,15 @@ class InsulinCalculator {
     bindEvents() {
         this.calculateBtn.addEventListener('click', () => this.calculate());
         this.copyBtn.addEventListener('click', () => this.copyPrescription());
+        
+        this.disclaimerBtn.addEventListener('click', () => this.showDisclaimer());
+        this.closeModal.addEventListener('click', () => this.hideDisclaimer());
+        this.closeModalBtn.addEventListener('click', () => this.hideDisclaimer());
+        this.disclaimerModal.addEventListener('click', (e) => {
+            if (e.target === this.disclaimerModal) {
+                this.hideDisclaimer();
+            }
+        });
         
         this.penSelect.addEventListener('change', (e) => {
             const selectedValue = e.target.value;
@@ -267,6 +281,16 @@ class InsulinCalculator {
         } else {
             this.boxInfoDiv.classList.add('hidden');
         }
+    }
+
+    showDisclaimer() {
+        this.disclaimerModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    hideDisclaimer() {
+        this.disclaimerModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
     }
 }
 
