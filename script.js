@@ -546,7 +546,8 @@ class InsulinCalculator {
     validateUnitsPerDose(input) {
         const value = parseFloat(input.value);
         
-        if (isNaN(value) || value <= 0) {
+        // Don't validate empty fields (user hasn't entered anything yet)
+        if (!input.value || input.value.trim() === '' || isNaN(value) || value <= 0) {
             this.clearValidationError(input);
             return true;
         }
@@ -573,7 +574,8 @@ class InsulinCalculator {
     validateDaySupply(input) {
         const value = parseFloat(input.value);
         
-        if (isNaN(value) || value <= 0) {
+        // Don't validate empty fields or default values
+        if (!input.value || input.value.trim() === '' || isNaN(value) || value <= 0) {
             this.clearValidationError(input);
             return true;
         }
