@@ -3,6 +3,7 @@ class InsulinCalculator {
         this.initializeElements();
         this.bindEvents();
         this.bindWeightSliderEvents();
+        this.setupInputValidation();
     }
 
     initializeElements() {
@@ -151,15 +152,83 @@ class InsulinCalculator {
     }
 
     displayResults(results, prescriptionNote) {
+        // Validate calculation results before displaying
+        const validation = this.validateCalculationResults(results);
+        
+        if (!validation.isValid) {
+            this.displayError(validation.errors);
+            return;
+        }
+        
         this.totalUnitsSpan.textContent = `${results.totalUnits} units`;
         this.totalMLSpan.textContent = `${results.totalML} mL`;
         this.pensToOrderSpan.textContent = results.pensToOrder;
         this.prescriptionTextP.textContent = prescriptionNote;
         
+        // Show warnings if any
+        if (validation.warnings.length > 0) {
+            this.showCalculationWarnings(validation.warnings);
+        }
+        
         this.updateResultsUI();
         
         this.resultsDiv.classList.remove('hidden');
         this.errorDiv.classList.add('hidden');
+    }
+    
+    validateCalculationResults(results) {
+        const errors = [];
+        const warnings = [];
+        
+        // Check for unreasonable total units
+        if (results.totalUnits > 10000) {
+            errors.push('Calculated total units is extremely high. Please verify inputs.');
+        } else if (results.totalUnits > 3000) {
+            warnings.push('High total units calculated. Please double-check dosing.');
+        }
+        
+        // Check for unreasonable pen count
+        if (results.pensToOrder > 50) {
+            errors.push('Calculated pen count is unusually high. Please verify inputs.');
+        } else if (results.pensToOrder > 20) {
+            warnings.push('High number of pens calculated. Please verify day supply and dosing.');
+        }
+        
+        // Check for very small doses that might indicate input errors
+        if (results.totalUnits < 1) {
+            warnings.push('Very low total units calculated. Please verify dosing inputs.');
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors,
+            warnings
+        };
+    }
+    
+    showCalculationWarnings(warnings) {
+        // Create warning display above results
+        const existingWarning = this.resultsDiv.querySelector('.calculation-warnings');
+        if (existingWarning) {
+            existingWarning.remove();
+        }
+        
+        const warningDiv = document.createElement('div');
+        warningDiv.className = 'calculation-warnings bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4';
+        
+        const title = document.createElement('div');
+        title.className = 'text-sm font-medium text-yellow-800 mb-2';
+        title.textContent = '⚠️ Please Review:';
+        warningDiv.appendChild(title);
+        
+        warnings.forEach(warning => {
+            const warningText = document.createElement('div');
+            warningText.className = 'text-sm text-yellow-700';
+            warningText.textContent = `• ${warning}`;
+            warningDiv.appendChild(warningText);
+        });
+        
+        this.resultsDiv.insertBefore(warningDiv, this.resultsDiv.firstChild);
     }
 
     displayError(errors) {
@@ -378,11 +447,191 @@ class InsulinCalculator {
     toggleWeightUnit() {
         const currentUnit = this.weightUnitToggle.dataset.unit;
         const newUnit = currentUnit === 'kg' ? 'lbs' : 'kg';
+        const currentWeight = parseFloat(this.patientWeightInput.value);
         
+        // If there's a weight value, ask for confirmation
+        if (currentWeight && currentWeight > 0) {
+            const convertedWeight = currentUnit === 'kg' 
+                ? Math.round(currentWeight / 0.4536 * 10) / 10  // kg to lbs
+                : Math.round(currentWeight * 0.4536 * 10) / 10; // lbs to kg
+            
+            const message = `Convert ${currentWeight} ${currentUnit} to ${convertedWeight} ${newUnit}?`;
+            const options = [
+                { text: 'Convert Weight', action: 'convert' },
+                { text: 'Clear Weight', action: 'clear' },
+                { text: 'Cancel', action: 'cancel' }
+            ];
+            
+            this.showWeightConversionDialog(message, options, (action) => {
+                if (action === 'convert') {
+                    this.patientWeightInput.value = convertedWeight;
+                    this.updateWeightUnit(newUnit);
+                } else if (action === 'clear') {
+                    this.patientWeightInput.value = '';
+                    this.updateWeightUnit(newUnit);
+                }
+                // For 'cancel', do nothing
+            });
+        } else {
+            // No weight value, just change unit
+            this.updateWeightUnit(newUnit);
+        }
+    }
+    
+    updateWeightUnit(newUnit) {
         this.weightUnitToggle.dataset.unit = newUnit;
         this.weightUnitToggle.textContent = newUnit;
-        
         this.calculateDoseFromSlider();
+    }
+    
+    showWeightConversionDialog(message, options, callback) {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50';
+        
+        // Create dialog
+        const dialog = document.createElement('div');
+        dialog.className = 'bg-white rounded-lg max-w-sm w-full p-6';
+        
+        // Add message
+        const messageEl = document.createElement('p');
+        messageEl.className = 'text-gray-900 mb-4 text-center';
+        messageEl.textContent = message;
+        dialog.appendChild(messageEl);
+        
+        // Add buttons
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'space-y-2';
+        
+        options.forEach(option => {
+            const button = document.createElement('button');
+            button.className = option.action === 'convert' 
+                ? 'w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                : option.action === 'clear'
+                ? 'w-full bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500'
+                : 'w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500';
+            button.textContent = option.text;
+            button.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+                callback(option.action);
+            });
+            buttonContainer.appendChild(button);
+        });
+        
+        dialog.appendChild(buttonContainer);
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+                callback('cancel');
+            }
+        });
+    }
+    
+    setupInputValidation() {
+        // Units per dose validation
+        this.unitsPerDoseInput.addEventListener('input', (e) => {
+            this.validateUnitsPerDose(e.target);
+        });
+        
+        // Day supply validation
+        this.daySupplyInput.addEventListener('input', (e) => {
+            this.validateDaySupply(e.target);
+        });
+    }
+    
+    validateUnitsPerDose(input) {
+        const value = parseFloat(input.value);
+        
+        if (isNaN(value) || value <= 0) {
+            this.clearValidationError(input);
+            return true;
+        }
+        
+        // Reasonable insulin dose bounds
+        const minDose = 0.1;
+        const maxDose = 200;  // Very high but possible for severe insulin resistance
+        
+        if (value < minDose || value > maxDose) {
+            this.showValidationError(input, `Dose must be between ${minDose}-${maxDose} units`);
+            return false;
+        }
+        
+        // Warning for very high doses
+        if (value > 100) {
+            this.showValidationWarning(input, `High dose (${value} units) - please verify`);
+        } else {
+            this.clearValidationError(input);
+        }
+        
+        return true;
+    }
+    
+    validateDaySupply(input) {
+        const value = parseFloat(input.value);
+        
+        if (isNaN(value) || value <= 0) {
+            this.clearValidationError(input);
+            return true;
+        }
+        
+        // Reasonable day supply bounds
+        const minDays = 1;
+        const maxDays = 365;
+        
+        if (value < minDays || value > maxDays) {
+            this.showValidationError(input, `Day supply must be between ${minDays}-${maxDays} days`);
+            return false;
+        }
+        
+        this.clearValidationError(input);
+        return true;
+    }
+    
+    showValidationError(input, message) {
+        input.classList.add('border-red-500', 'bg-red-50');
+        input.classList.remove('border-gray-300', 'border-yellow-500', 'bg-yellow-50');
+        this.showValidationMessage(input, message, 'error');
+    }
+    
+    showValidationWarning(input, message) {
+        input.classList.add('border-yellow-500', 'bg-yellow-50');
+        input.classList.remove('border-gray-300', 'border-red-500', 'bg-red-50');
+        this.showValidationMessage(input, message, 'warning');
+    }
+    
+    clearValidationError(input) {
+        input.classList.remove('border-red-500', 'bg-red-50', 'border-yellow-500', 'bg-yellow-50');
+        input.classList.add('border-gray-300');
+        this.hideValidationMessage(input);
+    }
+    
+    showValidationMessage(input, message, type) {
+        this.hideValidationMessage(input);
+        
+        const messageEl = document.createElement('div');
+        messageEl.className = type === 'error' 
+            ? 'absolute z-10 text-red-600 text-xs mt-1 validation-message bg-white border border-red-200 rounded px-2 py-1 shadow-lg'
+            : 'absolute z-10 text-yellow-600 text-xs mt-1 validation-message bg-white border border-yellow-200 rounded px-2 py-1 shadow-lg';
+        messageEl.textContent = message;
+        
+        // Position the message below the input without affecting layout
+        const parentNode = input.parentNode;
+        if (!parentNode.style.position) {
+            parentNode.style.position = 'relative';
+        }
+        
+        parentNode.appendChild(messageEl);
+    }
+    
+    hideValidationMessage(input) {
+        const existingMessage = input.parentNode.querySelector('.validation-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
     }
 }
 
