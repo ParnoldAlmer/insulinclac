@@ -447,6 +447,9 @@ class InsulinCalculator {
         if (penValue === 'lantus-solostar') {
             this.pricingTextSpan.textContent = '$35/box with GoodRx';
             this.pricingInfoDiv.classList.remove('hidden');
+        } else if (penValue === 'admelog-solostar') {
+            this.pricingTextSpan.textContent = '$35/box with GoodRx';
+            this.pricingInfoDiv.classList.remove('hidden');
         } else {
             this.pricingInfoDiv.classList.add('hidden');
         }
