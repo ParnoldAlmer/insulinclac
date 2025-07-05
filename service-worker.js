@@ -1,10 +1,10 @@
-const CACHE_NAME = 'insulin-calculator-v2';
+const CACHE_NAME = 'insulin-calculator-v3';
 const urlsToCache = [
-  './',
-  './index.html',
-  './script.js',
-  './final_insulin_pens.json',
-  './manifest.json',
+  '/',
+  '/index.html',
+  '/script.js',
+  '/final_insulin_pens.json',
+  '/manifest.json',
   'https://cdn.tailwindcss.com'
 ];
 
