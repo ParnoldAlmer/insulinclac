@@ -305,7 +305,12 @@ class InsulinCalculator {
                     data[key].forEach(pen => {
                         const option = document.createElement('option');
                         option.value = pen.value;
-                        option.textContent = `${pen.brand} - ${pen.generic} (${pen.concentration} U/mL, ${pen.volume} mL)`;
+                        
+                        // Add $35 tag for pens with GoodRx pricing
+                        const hasGoodRxPricing = ['lantus-solostar', 'toujeo-solostar', 'admelog-solostar', 'apidra-solostar'].includes(pen.value);
+                        const priceTag = hasGoodRxPricing ? ' $35' : '';
+                        
+                        option.textContent = `${pen.brand} - ${pen.generic} (${pen.concentration} U/mL, ${pen.volume} mL)${priceTag}`;
                         optgroup.appendChild(option);
                     });
                     
