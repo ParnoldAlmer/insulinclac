@@ -240,6 +240,14 @@ class InsulinCalculator {
 
     calculate() {
         const values = this.getInputValues();
+        
+        // Don't show validation errors if essential fields are empty (user hasn't started yet)
+        if (!values.unitsPerDose || !values.concentration || !values.volumePerPen) {
+            this.resultsDiv.classList.add('hidden');
+            this.errorDiv.classList.add('hidden');
+            return;
+        }
+        
         const errors = this.validateInputs(values);
         
         if (errors.length > 0) {
