@@ -251,14 +251,11 @@ class InsulinCalculator {
             ndcCode = boxNDC || this.selectedPen.ndc_codes[0];
         }
         
-        const refills = Math.max(0, Math.floor(365 / values.daySupply) - 1);
-        
         return {
             sig: `Inject ${values.unitsPerDose} units subcutaneously ${frequency}.`,
             disp: `Disp: ${results.pensToOrder} pen${results.pensToOrder > 1 ? 's' : ''} (${values.volumePerPen} mL each)`,
-            refills: `Refills: ${refills}`,
             ndc: `NDC: ${ndcCode}`,
-            fullSig: `${insulinType} ${values.concentration} units/mL pen\n\nInject ${values.unitsPerDose} units subcutaneously ${frequency}.\n\nDisp: ${results.pensToOrder} pen${results.pensToOrder > 1 ? 's' : ''} (${values.volumePerPen} mL each)\nRefills: ${refills}\nNDC: ${ndcCode}`
+            fullSig: `${insulinType} ${values.concentration} units/mL pen\n\nInject ${values.unitsPerDose} units subcutaneously ${frequency}.\n\nDisp: ${results.pensToOrder} pen${results.pensToOrder > 1 ? 's' : ''} (${values.volumePerPen} mL each)\nNDC: ${ndcCode}`
         };
     }
 
@@ -289,7 +286,6 @@ class InsulinCalculator {
                     <div class="font-bold mb-2">Prescription Sig:</div>
                     <div>${rxSig.sig}</div>
                     <div class="mt-2">${rxSig.disp}</div>
-                    <div>${rxSig.refills}</div>
                     <div>${rxSig.ndc}</div>
                 </div>
             `;
