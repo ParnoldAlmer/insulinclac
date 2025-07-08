@@ -460,11 +460,7 @@ class InsulinCalculator {
             const boxesNeeded = Math.ceil(results.pensToOrder / this.selectedPen.pens_per_box);
             const totalPensInBoxes = boxesNeeded * this.selectedPen.pens_per_box;
             
-            this.monthsPerBoxSpan.innerHTML = `
-                <div><strong>Pens needed:</strong> ${results.pensToOrder}</div>
-                <div><strong>Boxes needed:</strong> ${boxesNeeded} (${totalPensInBoxes} total pens)</div>
-                <div><strong>Supply per box:</strong> ${Math.round(monthsPerBox * 10) / 10} months</div>
-            `;
+            this.monthsPerBoxSpan.textContent = `${boxesNeeded} boxes (${totalPensInBoxes} total pens)`;
             
             this.boxInfoDiv.classList.remove('hidden');
         } else {
