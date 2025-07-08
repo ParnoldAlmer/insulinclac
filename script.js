@@ -46,10 +46,28 @@ class InsulinCalculator {
         this.wastageDisplay = document.getElementById('wastageDisplay');
         this.expirationWarning = document.getElementById('expirationWarning');
         this.sigGeneration = document.getElementById('sigGeneration');
+        this.maxDoseWarning = document.getElementById('maxDoseWarning');
         
         this.insulinPens = null;
         this.selectedPen = null;
         this.includeWastage = true;
+        
+        // Max dose limits per injection for insulin pens (in units)
+        this.maxDoseLimits = {
+            'humalog-kwikpen': 60,
+            'humalog-kwikpen-u200': 160,
+            'novolog-flexpen': 60,
+            'fiasp-flextouch': 80,
+            'lantus-solostar': 80,
+            'basaglar-kwikpen': 80,
+            'tresiba-flextouch': 80,
+            'tresiba-flextouch-u200': 160,
+            'toujeo-solostar': 80,
+            'toujeo-max-solostar': 160, // Note: This doesn't exist in current data but included for completeness
+            'levemir-flextouch': 80,
+            'admelog-solostar': 60, // Same as Humalog U-100
+            'apidra-solostar': 60   // Typical for rapid-acting pens
+        };
         
         this.populateDropdown();
     }
@@ -77,6 +95,7 @@ class InsulinCalculator {
                     this.toggleWeightBasedDosing(penType);
                     this.showPricingInfo(selectedValue, selectedPen);
                     this.checkExpirationWarning(selectedValue);
+                    this.checkMaxDoseLimit(); // Check max dose when pen selection changes
                 }
             } else {
                 this.toggleWeightBasedDosing(null);
@@ -657,6 +676,7 @@ class InsulinCalculator {
         // Enhanced validation for all numeric inputs
         this.unitsPerDoseInput.addEventListener('input', (e) => {
             this.validateUnitsPerDose(e.target);
+            this.checkMaxDoseLimit();
         });
         
         this.daySupplyInput.addEventListener('input', (e) => {
@@ -967,6 +987,43 @@ class InsulinCalculator {
     hideExpirationWarning() {
         if (this.expirationWarning) {
             this.expirationWarning.classList.add('hidden');
+        }
+    }
+    
+    checkMaxDoseLimit() {
+        const selectedValue = this.penSelect.value;
+        const dose = parseFloat(this.unitsPerDoseInput.value);
+        
+        // Clear warning if no pen selected or no dose entered
+        if (!selectedValue || !dose || dose <= 0) {
+            this.hideMaxDoseWarning();
+            return;
+        }
+        
+        // Get max dose limit for selected pen
+        const maxDose = this.maxDoseLimits[selectedValue];
+        
+        // Show warning if dose exceeds maximum
+        if (maxDose && dose > maxDose) {
+            this.showMaxDoseWarning(dose, maxDose);
+        } else {
+            this.hideMaxDoseWarning();
+        }
+    }
+    
+    showMaxDoseWarning(enteredDose, maxDose) {
+        if (this.maxDoseWarning) {
+            // Update warning message with specific values
+            this.maxDoseWarning.innerHTML = `
+                ⚠️ This dose (${enteredDose} units) exceeds the max deliverable in a single injection for this pen (${maxDose} units max). Consider splitting the dose or using a different formulation.
+            `;
+            this.maxDoseWarning.classList.remove('hidden');
+        }
+    }
+    
+    hideMaxDoseWarning() {
+        if (this.maxDoseWarning) {
+            this.maxDoseWarning.classList.add('hidden');
         }
     }
 }
