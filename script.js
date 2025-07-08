@@ -453,9 +453,8 @@ class InsulinCalculator {
                         // Add $35 tag for pens with GoodRx pricing
                         const hasGoodRxPricing = ['lantus-solostar', 'toujeo-solostar', 'admelog-solostar', 'apidra-solostar'].includes(pen.value);
                         const priceTag = hasGoodRxPricing ? ' $35' : '';
-                        const primingTag = pen.priming_units ? ` [${pen.priming_units}U priming]` : '';
                         
-                        option.textContent = `${pen.brand} - ${pen.generic} (${pen.concentration} U/mL, ${pen.volume} mL)${primingTag}${priceTag}`;
+                        option.textContent = `${pen.brand} - ${pen.generic} (${pen.concentration} U/mL, ${pen.volume} mL)${priceTag}`;
                         optgroup.appendChild(option);
                     });
                     
