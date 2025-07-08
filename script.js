@@ -589,16 +589,16 @@ class InsulinCalculator {
 
     showPricingInfo(penValue, pen) {
         if (penValue === 'lantus-solostar') {
-            this.pricingTextSpan.textContent = 'Estimated Cost: $35 for a 30-day supply (via GoodRx or copay card)';
+            this.pricingTextSpan.textContent = 'Estimated Cost: $35 for a 30-day supply (via GoodRx)';
             this.pricingInfoDiv.classList.remove('hidden');
         } else if (penValue === 'toujeo-solostar') {
-            this.pricingTextSpan.textContent = 'Estimated Cost: $35 for a 30-day supply (via GoodRx or copay card)';
+            this.pricingTextSpan.textContent = 'Estimated Cost: $35 for a 30-day supply (via GoodRx)';
             this.pricingInfoDiv.classList.remove('hidden');
         } else if (penValue === 'admelog-solostar') {
-            this.pricingTextSpan.textContent = 'Estimated Cost: $35 for a 30-day supply (via GoodRx or copay card)';
+            this.pricingTextSpan.textContent = 'Estimated Cost: $35 for a 30-day supply (via GoodRx)';
             this.pricingInfoDiv.classList.remove('hidden');
         } else if (penValue === 'apidra-solostar') {
-            this.pricingTextSpan.textContent = 'Estimated Cost: $35 for a 30-day supply (via GoodRx or copay card)';
+            this.pricingTextSpan.textContent = 'Estimated Cost: $35 for a 30-day supply (via GoodRx)';
             this.pricingInfoDiv.classList.remove('hidden');
         } else {
             this.pricingInfoDiv.classList.add('hidden');
