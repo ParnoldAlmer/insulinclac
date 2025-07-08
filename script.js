@@ -55,55 +55,60 @@ class InsulinCalculator {
         this.includeWastage = true;
         
         
-        // Discount links for each pen
+        // Discount links for each pen category
         this.penDiscountInfo = {
+            // Sanofi pens - GoodRx $35/month + Amazon
             'lantus-solostar': {
-                goodrx: 'https://www.goodrx.com/lantus',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
-            },
-            'basaglar-kwikpen': {
-                goodrx: 'https://www.goodrx.com/basaglar',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
-            },
-            'tresiba-flextouch': {
-                goodrx: 'https://www.goodrx.com/tresiba',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
-            },
-            'tresiba-flextouch-u200': {
-                goodrx: 'https://www.goodrx.com/tresiba',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
-            },
-            'levemir-flextouch': {
-                goodrx: 'https://www.goodrx.com/levemir',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+                goodrx: { url: 'https://www.goodrx.com/insulin/sanofi-insulins', text: 'GoodRx $35/month Coupon' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             },
             'toujeo-solostar': {
-                goodrx: 'https://www.goodrx.com/toujeo',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
-            },
-            'humalog-kwikpen': {
-                goodrx: 'https://www.goodrx.com/humalog',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
-            },
-            'humalog-kwikpen-u200': {
-                goodrx: 'https://www.goodrx.com/humalog',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
-            },
-            'novolog-flexpen': {
-                goodrx: 'https://www.goodrx.com/novolog',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
-            },
-            'fiasp-flextouch': {
-                goodrx: 'https://www.goodrx.com/fiasp',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+                goodrx: { url: 'https://www.goodrx.com/insulin/sanofi-insulins', text: 'GoodRx $35/month Coupon' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             },
             'admelog-solostar': {
-                goodrx: 'https://www.goodrx.com/admelog',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+                goodrx: { url: 'https://www.goodrx.com/insulin/sanofi-insulins', text: 'GoodRx $35/month Coupon' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             },
             'apidra-solostar': {
-                goodrx: 'https://www.goodrx.com/apidra',
-                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+                goodrx: { url: 'https://www.goodrx.com/insulin/sanofi-insulins', text: 'GoodRx $35/month Coupon' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+            },
+            
+            // Lilly pens - Lilly Insulin Savings + Amazon
+            'humalog-kwikpen': {
+                lilly: { url: 'https://www.insulinaffordability.com/', text: 'Lilly Insulin Savings' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+            },
+            'humalog-kwikpen-u200': {
+                lilly: { url: 'https://www.insulinaffordability.com/', text: 'Lilly Insulin Savings' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+            },
+            'basaglar-kwikpen': {
+                lilly: { url: 'https://www.insulinaffordability.com/', text: 'Lilly Insulin Savings' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+            },
+            
+            // Novo Nordisk pens - NovoCare + Amazon
+            'novolog-flexpen': {
+                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+            },
+            'fiasp-flextouch': {
+                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+            },
+            'levemir-flextouch': {
+                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+            },
+            'tresiba-flextouch': {
+                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+            },
+            'tresiba-flextouch-u200': {
+                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             }
         };
         
@@ -511,8 +516,9 @@ class InsulinCalculator {
                         const hasGoodRxPricing = ['lantus-solostar', 'toujeo-solostar', 'admelog-solostar', 'apidra-solostar'].includes(pen.value);
                         const priceTag = hasGoodRxPricing ? ' $35' : '';
                         
-                        // Add discount indicator for all pens
-                        const discountTag = ' 💰';
+                        // Add discount indicator only for pens with discount options
+                        const hasDiscountOptions = this.penDiscountInfo[pen.value];
+                        const discountTag = hasDiscountOptions ? ' 💰' : '';
                         
                         option.textContent = `${pen.brand} - ${pen.generic} (${pen.concentration} U/mL, ${pen.volume} mL)${priceTag}${discountTag}`;
                         optgroup.appendChild(option);
@@ -1119,23 +1125,61 @@ class InsulinCalculator {
             return;
         }
         
-        // Update inline discount links in prescription note
-        const inlineLinksHTML = `
-            <a href="${discountInfo.amazon}" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
-                Amazon Discount
-            </a>
-            <a href="${discountInfo.goodrx}" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
-                GoodRx Coupon
-            </a>
-        `;
+        // Build discount links HTML based on available options
+        let linksHTML = '';
         
-        this.inlineDiscountContent.innerHTML = inlineLinksHTML;
+        // Add GoodRx link (only for Sanofi pens)
+        if (discountInfo.goodrx) {
+            linksHTML += `
+                <a href="${discountInfo.goodrx.url}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                    ${discountInfo.goodrx.text}
+                </a>
+            `;
+        }
+        
+        // Add Lilly link (only for Lilly pens)
+        if (discountInfo.lilly) {
+            if (linksHTML) linksHTML += ' • ';
+            linksHTML += `
+                <a href="${discountInfo.lilly.url}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                    ${discountInfo.lilly.text}
+                </a>
+            `;
+        }
+        
+        // Add NovoCare link (only for Novo Nordisk pens)
+        if (discountInfo.novocare) {
+            if (linksHTML) linksHTML += ' • ';
+            linksHTML += `
+                <a href="${discountInfo.novocare.url}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                    ${discountInfo.novocare.text}
+                </a>
+            `;
+        }
+        
+        // Add Amazon link (for all pens)
+        if (discountInfo.amazon) {
+            if (linksHTML) linksHTML += ' • ';
+            linksHTML += `
+                <a href="${discountInfo.amazon.url}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                    ${discountInfo.amazon.text}
+                </a>
+            `;
+        }
+        
+        this.inlineDiscountContent.innerHTML = linksHTML;
         this.inlineDiscountLinks.classList.remove('hidden');
     }
 }
