@@ -248,11 +248,8 @@ class InsulinCalculator {
         }
         
         const pensNeeded = results.pensToOrder;
-        const willDispenseText = pensNeeded >= 2 ? 
-            'Pharmacy will likely dispense 1 box (5 pens) if 2+ pens are needed.' : 
-            'Pharmacy will dispense the exact number of pens needed.';
         
-        breakdown += `Pens Needed: ${pensNeeded}\n\n${willDispenseText}\n\n`;
+        breakdown += `Pens Needed: ${pensNeeded}\n\n`;
         
         const copayCardInfo = '💡 Most copay cards (e.g., Lantus, Tresiba) cover a 30-day supply based on daily dose — not the number of pens or boxes. The pharmacy will match your Sig with an appropriate fill.';
         
