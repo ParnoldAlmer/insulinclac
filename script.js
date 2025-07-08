@@ -48,7 +48,7 @@ class InsulinCalculator {
         
         this.insulinPens = null;
         this.selectedPen = null;
-        this.includeWastage = false;
+        this.includeWastage = true;
         
         this.populateDropdown();
     }
