@@ -69,7 +69,7 @@ class InsulinCalculator {
         this.insulinPens = null;
         this.selectedPen = null;
         this.includeWastage = true;
-        this.isDischargeMode = false;
+        this.isDischargeMode = true;
         
         // Max dose limits per injection for insulin pens (in units)
         this.maxDoseLimits = {
@@ -115,6 +115,11 @@ class InsulinCalculator {
         };
         
         this.populateDropdown();
+        
+        // Initialize discharge mode if enabled by default
+        if (this.isDischargeMode) {
+            this.daySupplyInput.disabled = true;
+        }
     }
 
     bindEvents() {
