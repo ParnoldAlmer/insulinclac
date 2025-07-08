@@ -53,35 +53,35 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen py-4 md:py-8">
-    <div class="max-w-2xl mx-auto px-4">
-        <div class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <h1 class="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 text-center">
+<body class="bg-gray-50 min-h-screen py-2 sm:py-4 md:py-8">
+    <div class="max-w-4xl mx-auto px-3 sm:px-4">
+        <div class="bg-white rounded-lg shadow-lg p-3 sm:p-4 md:p-6">
+            <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 text-center">
                 Insulin Pen Prescription Calculator
             </h1>
             
-            <div class="space-y-4 md:space-y-6">
+            <div class="space-y-6">
                     
-                <div>
-                    <label for="penSelect" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                    <label for="penSelect" class="block text-sm font-medium text-gray-800 mb-2">
                         Select Insulin Pen (Optional)
                     </label>
                     <select 
                         id="penSelect"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-800 shadow-sm hover:border-gray-400 transition-colors"
                     >
                         <option value="">Select an insulin pen...</option>
                     </select>
                 </div>
 
                 <!-- Weight-Based Dosing Section -->
-                <div id="weightBasedDosing" class="bg-gray-50 rounded-lg p-4 mb-4 hidden">
-                    <h3 class="text-sm font-medium text-gray-700 mb-3">Weight-Based Dosing</h3>
+                <div id="weightBasedDosing" class="bg-gray-50 rounded-lg p-4 space-y-4 hidden">
+                    <h3 class="text-sm font-medium text-gray-800 mb-3">Weight-Based Dosing</h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                        <div>
-                            <label for="patientWeight" class="block text-sm font-medium text-gray-700 mb-1">
-                                Patient Weight
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label for="patientWeight" class="block text-sm font-medium text-gray-800 mb-2">
+                                Patient Weight *
                             </label>
                             <div class="flex gap-2">
                                 <input 
@@ -95,7 +95,7 @@
                                 <button 
                                     type="button"
                                     id="weightUnitToggle" 
-                                    class="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium transition-colors"
+                                    class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium transition-colors shadow-sm"
                                     data-unit="kg"
                                 >
                                     kg
@@ -103,24 +103,30 @@
                             </div>
                         </div>
                         
-                        <div>
-                            <label for="dosingSlider" class="block text-sm font-medium text-gray-700 mb-1">
+                        <div class="space-y-2">
+                            <label for="dosingSlider" class="block text-sm font-medium text-gray-800 mb-2">
                                 Dosing (units/kg/day)
                             </label>
-                            <input 
-                                type="range" 
-                                id="dosingSlider" 
-                                class="w-full h-6 appearance-none bg-gray-300 rounded-lg touch-manipulation focus:outline-none cursor-pointer"
-                                style="touch-action: manipulation;"
-                                min="0" 
-                                max="2" 
-                                step="1"
-                                value="0"
-                            >
-                            <div class="flex justify-between text-xs text-gray-500 mt-1">
-                                <span>0.1</span>
-                                <span>0.2</span>
-                                <span>0.3</span>
+                            <div class="relative">
+                                <input 
+                                    type="range" 
+                                    id="dosingSlider" 
+                                    class="w-full h-6 appearance-none bg-gray-300 rounded-lg touch-manipulation focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    style="touch-action: manipulation;"
+                                    min="0" 
+                                    max="2" 
+                                    step="1"
+                                    value="1"
+                                    disabled
+                                >
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>0.1</span>
+                                    <span>0.2</span>
+                                    <span>0.3</span>
+                                </div>
+                                <div id="sliderTooltip" class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 transition-opacity duration-200 pointer-events-none">
+                                    Enter weight to activate dosing
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -137,8 +143,8 @@
                     </div>
                 </div>
 
-                <div>
-                    <label for="daySupply" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                    <label for="daySupply" class="block text-sm font-medium text-gray-800 mb-2">
                         Day Supply
                     </label>
                     <input 
@@ -148,10 +154,11 @@
                         value="30"
                         min="1"
                     >
+                    <div id="daySupplyError" class="text-sm text-red-600 hidden"></div>
                 </div>
 
-                <div>
-                    <label for="unitsPerDose" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                    <label for="unitsPerDose" class="block text-sm font-medium text-gray-800 mb-2">
                         Units per Dose <span class="text-red-500">*</span>
                     </label>
                     <input 
@@ -163,10 +170,11 @@
                         step="0.1"
                         required
                     >
+                    <div id="unitsPerDoseError" class="text-sm text-red-600 hidden"></div>
                 </div>
 
-                <div>
-                    <label for="doseFrequency" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                    <label for="doseFrequency" class="block text-sm font-medium text-gray-800 mb-2">
                         Dose Frequency (doses per day)
                     </label>
                     <input 
@@ -177,10 +185,11 @@
                         min="1"
                         step="1"
                     >
+                    <div id="doseFrequencyError" class="text-sm text-red-600 hidden"></div>
                 </div>
 
-                <div>
-                    <label for="concentration" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                    <label for="concentration" class="block text-sm font-medium text-gray-800 mb-2">
                         Insulin Concentration (units/mL) <span class="text-red-500">*</span>
                     </label>
                     <input 
@@ -192,10 +201,11 @@
                         min="1"
                         required
                     >
+                    <div id="concentrationError" class="text-sm text-red-600 hidden"></div>
                 </div>
 
-                <div>
-                    <label for="volumePerPen" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                    <label for="volumePerPen" class="block text-sm font-medium text-gray-800 mb-2">
                         Volume per Pen (mL) <span class="text-red-500">*</span>
                     </label>
                     <input 
@@ -208,19 +218,35 @@
                         step="0.1"
                         required
                     >
+                    <div id="volumePerPenError" class="text-sm text-red-600 hidden"></div>
                 </div>
 
-                <!-- Wastage Toggle -->
-                <div class="flex items-center space-x-3">
-                    <input 
-                        type="checkbox" 
-                        id="wastageToggle" 
-                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        checked
-                    >
-                    <label for="wastageToggle" class="text-sm font-medium text-gray-700">
-                        Include 7.5% wastage + priming
-                    </label>
+                <!-- Advanced Options Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Wastage Toggle -->
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-3">
+                            <input 
+                                type="checkbox" 
+                                id="wastageToggle" 
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                checked
+                            >
+                            <label for="wastageToggle" class="text-sm font-medium text-gray-800">
+                                Include 7.5% wastage + priming
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Calculate Button moved here for better mobile layout -->
+                    <div class="space-y-2">
+                        <button 
+                            id="calculateBtn" 
+                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-sm sm:text-base"
+                        >
+                            Calculate
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Expiration Warning -->
@@ -239,44 +265,38 @@
                     </div>
                 </div>
 
-                <button 
-                    id="calculateBtn" 
-                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                >
-                    Calculate
-                </button>
             </div>
 
             <!-- Results -->
             <div id="results" class="bg-gray-50 rounded-lg p-4 space-y-3 hidden">
                 <h3 class="text-lg font-semibold text-gray-900 mb-3">Results</h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     <div class="bg-white p-3 rounded border">
-                        <div class="text-sm text-gray-600">Total Units Needed</div>
-                        <div id="totalUnits" class="text-lg font-semibold text-gray-900">-</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Total Units Needed</div>
+                        <div id="totalUnits" class="text-base sm:text-lg font-semibold text-gray-900">-</div>
                     </div>
                     
                     <div class="bg-white p-3 rounded border">
-                        <div class="text-sm text-gray-600">Total mL Needed</div>
-                        <div id="totalML" class="text-lg font-semibold text-gray-900">-</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Total mL Needed</div>
+                        <div id="totalML" class="text-base sm:text-lg font-semibold text-gray-900">-</div>
                     </div>
                     
-                    <div class="bg-white p-3 rounded border">
-                        <div class="text-sm text-gray-600">Pens to Order</div>
-                        <div id="pensToOrder" class="text-lg font-semibold text-blue-600">-</div>
+                    <div class="bg-white p-3 rounded border sm:col-span-2 lg:col-span-1">
+                        <div class="text-xs sm:text-sm text-gray-600">Pens to Order</div>
+                        <div id="pensToOrder" class="text-base sm:text-lg font-semibold text-blue-600">-</div>
                     </div>
                 </div>
 
-                <div id="boxInfo" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 hidden">
+                <div id="boxInfo" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4 hidden">
                     <div class="bg-white p-3 rounded border">
-                        <div class="text-sm text-gray-600">Pens per Box</div>
-                        <div id="pensPerBox" class="text-lg font-semibold text-gray-900">-</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Pens per Box</div>
+                        <div id="pensPerBox" class="text-base sm:text-lg font-semibold text-gray-900">-</div>
                     </div>
                     
                     <div class="bg-white p-3 rounded border">
-                        <div class="text-sm text-gray-600">Boxes to Order</div>
-                        <div id="monthsPerBox" class="text-lg font-semibold text-gray-900">-</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Boxes to Order</div>
+                        <div id="monthsPerBox" class="text-base sm:text-lg font-semibold text-gray-900">-</div>
                     </div>
                 </div>
 
@@ -286,15 +306,15 @@
                 <!-- Prescription Sig Generation -->
                 <div id="sigGeneration" class="mt-4"></div>
 
-                <div id="prescriptionNote" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="text-sm font-medium text-blue-900 mb-2">Prescription Note</h4>
-                            <p id="prescriptionText" class="text-sm text-blue-800"></p>
+                <div id="prescriptionNote" class="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mt-4">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                        <div class="flex-1">
+                            <h4 class="text-xs sm:text-sm font-medium text-blue-900 mb-2">Prescription Note</h4>
+                            <p id="prescriptionText" class="text-xs sm:text-sm text-blue-800 leading-relaxed"></p>
                         </div>
                         <button 
                             id="copyBtn" 
-                            class="ml-4 bg-blue-600 text-white px-3 py-1 text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="bg-blue-600 text-white px-3 py-2 text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 self-start sm:ml-4"
                         >
                             Copy
                         </button>
@@ -308,10 +328,25 @@
             </div>
         </div>
         
-        <!-- Disclaimer Button -->
-        <div class="max-w-2xl mx-auto px-4 mt-6 mb-8 text-center">
+            <!-- Disclaimer at bottom of card -->
+            <div class="mt-8 pt-4 border-t border-gray-200">
+                <p class="text-xs text-gray-500 italic text-center leading-relaxed">
+                    <strong>Important:</strong> This calculator is for educational purposes only and is not intended for patient use. 
+                    Always consult with a healthcare professional before making any medication decisions.
+                    <button 
+                        id="disclaimerBtn" 
+                        class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1 ml-1"
+                    >
+                        Full Disclaimer
+                    </button>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Disclaimer Button (kept for compatibility) -->
+        <div class="max-w-2xl mx-auto px-4 mt-6 mb-8 text-center hidden">
             <button 
-                id="disclaimerBtn" 
+                id="disclaimerBtn2" 
                 class="text-xs text-gray-500 hover:text-gray-700 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
             >
                 Disclaimer

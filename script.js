@@ -40,6 +40,7 @@ class InsulinCalculator {
         this.weightBasedDosingDiv = document.getElementById('weightBasedDosing');
         this.pricingInfoDiv = document.getElementById('pricingInfo');
         this.pricingTextSpan = document.getElementById('pricingText');
+        this.sliderTooltip = document.getElementById('sliderTooltip');
         
         this.wastageToggle = document.getElementById('wastageToggle');
         this.wastageDisplay = document.getElementById('wastageDisplay');
@@ -492,9 +493,18 @@ class InsulinCalculator {
 
     bindWeightSliderEvents() {
         this.dosingSlider.addEventListener('input', () => this.calculateDoseFromSlider());
-        this.patientWeightInput.addEventListener('input', () => this.calculateDoseFromSlider());
+        this.patientWeightInput.addEventListener('input', () => {
+            this.validateWeightInput();
+            this.updateSliderState();
+            this.calculateDoseFromSlider();
+        });
         this.weightUnitToggle.addEventListener('click', () => this.toggleWeightUnit());
         
+        // Add hover events for tooltip
+        this.dosingSlider.addEventListener('mouseenter', () => this.showSliderTooltip());
+        this.dosingSlider.addEventListener('mouseleave', () => this.hideSliderTooltip());
+        
+        this.updateSliderState();
         this.calculateDoseFromSlider();
     }
 
@@ -504,11 +514,11 @@ class InsulinCalculator {
         const weightUnit = this.weightUnitToggle.dataset.unit;
         
         const dosingValues = [0.1, 0.2, 0.3];
-        const dosingRate = dosingValues[sliderValue] || 0.1;
+        const dosingRate = dosingValues[sliderValue] || 0.2;
         
         this.sliderValueSpan.textContent = `${dosingRate} u/kg/day`;
         
-        if (weight && weight > 0) {
+        if (weight && weight > 0 && this.isValidWeight(weight)) {
             let weightInKg = weight;
             if (weightUnit === 'lbs') {
                 weightInKg = weight * 0.4536;
@@ -519,7 +529,7 @@ class InsulinCalculator {
             
             this.setDoseFromWeight(dailyDose);
         } else {
-            this.estimatedDoseSpan.textContent = '-';
+            this.estimatedDoseSpan.textContent = weight ? 'Invalid weight' : 'Enter weight above';
         }
     }
 
@@ -644,24 +654,106 @@ class InsulinCalculator {
     }
     
     setupInputValidation() {
-        // Units per dose validation
+        // Enhanced validation for all numeric inputs
         this.unitsPerDoseInput.addEventListener('input', (e) => {
             this.validateUnitsPerDose(e.target);
         });
         
-        // Day supply validation
         this.daySupplyInput.addEventListener('input', (e) => {
             this.validateDaySupply(e.target);
         });
+        
+        this.concentrationInput.addEventListener('input', (e) => {
+            this.validateConcentration(e.target);
+        });
+        
+        this.volumePerPenInput.addEventListener('input', (e) => {
+            this.validateVolumePerPen(e.target);
+        });
+        
+        this.doseFrequencyInput.addEventListener('input', (e) => {
+            this.validateDoseFrequency(e.target);
+        });
+    }
+    
+    validateConcentration(input) {
+        const value = parseFloat(input.value);
+        
+        if (!input.value || input.value.trim() === '' || isNaN(value)) {
+            this.clearInputValidation(input);
+            return true;
+        }
+        
+        if (value <= 0) {
+            this.showInputError(input, 'Concentration must be greater than 0');
+            return false;
+        }
+        
+        if (value < 50 || value > 500) {
+            this.showInputError(input, 'Concentration typically 50-500 units/mL');
+            return false;
+        }
+        
+        this.clearInputValidation(input);
+        return true;
+    }
+    
+    validateVolumePerPen(input) {
+        const value = parseFloat(input.value);
+        
+        if (!input.value || input.value.trim() === '' || isNaN(value)) {
+            this.clearInputValidation(input);
+            return true;
+        }
+        
+        if (value <= 0) {
+            this.showInputError(input, 'Volume must be greater than 0');
+            return false;
+        }
+        
+        if (value < 0.5 || value > 10) {
+            this.showInputError(input, 'Volume typically 0.5-10 mL per pen');
+            return false;
+        }
+        
+        this.clearInputValidation(input);
+        return true;
+    }
+    
+    validateDoseFrequency(input) {
+        const value = parseFloat(input.value);
+        
+        if (!input.value || input.value.trim() === '' || isNaN(value)) {
+            this.clearInputValidation(input);
+            return true;
+        }
+        
+        if (value <= 0 || value !== Math.floor(value)) {
+            this.showInputError(input, 'Frequency must be a whole number greater than 0');
+            return false;
+        }
+        
+        if (value > 10) {
+            this.showInputError(input, 'Frequency typically 1-10 doses per day');
+            return false;
+        }
+        
+        this.clearInputValidation(input);
+        return true;
     }
     
     validateUnitsPerDose(input) {
         const value = parseFloat(input.value);
         
         // Don't validate empty fields (user hasn't entered anything yet)
-        if (!input.value || input.value.trim() === '' || isNaN(value) || value <= 0) {
-            this.clearValidationError(input);
+        if (!input.value || input.value.trim() === '' || isNaN(value)) {
+            this.clearInputValidation(input);
             return true;
+        }
+        
+        if (value <= 0) {
+            this.showInputError(input, 'Dose must be greater than 0');
+            return false;
         }
         
         // Reasonable insulin dose bounds
@@ -669,15 +761,15 @@ class InsulinCalculator {
         const maxDose = 200;  // Very high but possible for severe insulin resistance
         
         if (value < minDose || value > maxDose) {
-            this.showValidationError(input, `Dose must be between ${minDose}-${maxDose} units`);
+            this.showInputError(input, `Dose must be between ${minDose}-${maxDose} units`);
             return false;
         }
         
         // Warning for very high doses
         if (value > 100) {
-            this.showValidationWarning(input, `High dose (${value} units) - please verify`);
+            this.showInputError(input, `High dose (${value} units) - please verify`);
         } else {
-            this.clearValidationError(input);
+            this.clearInputValidation(input);
         }
         
         return true;
@@ -687,9 +779,14 @@ class InsulinCalculator {
         const value = parseFloat(input.value);
         
         // Don't validate empty fields or default values
-        if (!input.value || input.value.trim() === '' || isNaN(value) || value <= 0) {
-            this.clearValidationError(input);
+        if (!input.value || input.value.trim() === '' || isNaN(value)) {
+            this.clearInputValidation(input);
             return true;
+        }
+        
+        if (value <= 0) {
+            this.showInputError(input, 'Day supply must be greater than 0');
+            return false;
         }
         
         // Reasonable day supply bounds
@@ -697,11 +794,11 @@ class InsulinCalculator {
         const maxDays = 365;
         
         if (value < minDays || value > maxDays) {
-            this.showValidationError(input, `Day supply must be between ${minDays}-${maxDays} days`);
+            this.showInputError(input, `Day supply must be between ${minDays}-${maxDays} days`);
             return false;
         }
         
-        this.clearValidationError(input);
+        this.clearInputValidation(input);
         return true;
     }
     
@@ -745,6 +842,86 @@ class InsulinCalculator {
         const existingMessage = input.parentNode.querySelector('.validation-message');
         if (existingMessage) {
             existingMessage.remove();
+        }
+    }
+    
+    updateSliderState() {
+        const weight = parseFloat(this.patientWeightInput.value);
+        const isValidWeight = weight && weight > 0 && this.isValidWeight(weight);
+        
+        if (isValidWeight) {
+            this.dosingSlider.disabled = false;
+            this.dosingSlider.classList.remove('opacity-50', 'cursor-not-allowed');
+            this.hideSliderTooltip();
+        } else {
+            this.dosingSlider.disabled = true;
+            this.dosingSlider.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+    
+    showSliderTooltip() {
+        if (this.dosingSlider.disabled && this.sliderTooltip) {
+            this.sliderTooltip.classList.remove('opacity-0');
+            this.sliderTooltip.classList.add('opacity-100');
+        }
+    }
+    
+    hideSliderTooltip() {
+        if (this.sliderTooltip) {
+            this.sliderTooltip.classList.add('opacity-0');
+            this.sliderTooltip.classList.remove('opacity-100');
+        }
+    }
+    
+    isValidWeight(weight) {
+        return weight >= 1 && weight <= 500; // Reasonable weight bounds
+    }
+    
+    validateWeightInput() {
+        const weight = parseFloat(this.patientWeightInput.value);
+        
+        if (!weight || weight <= 0) {
+            this.clearInputValidation(this.patientWeightInput);
+            return true; // Allow empty fields
+        }
+        
+        if (!this.isValidWeight(weight)) {
+            this.showInputError(this.patientWeightInput, 'Weight must be between 1-500');
+            return false;
+        }
+        
+        this.clearInputValidation(this.patientWeightInput);
+        return true;
+    }
+    
+    showInputError(input, message) {
+        input.classList.add('border-red-500', 'bg-red-50');
+        input.classList.remove('border-gray-300');
+        
+        // Find or create error element
+        const errorId = input.id + 'Error';
+        let errorElement = document.getElementById(errorId);
+        
+        if (!errorElement) {
+            // Create error element if it doesn't exist
+            errorElement = document.createElement('div');
+            errorElement.id = errorId;
+            errorElement.className = 'text-sm text-red-600';
+            input.parentNode.appendChild(errorElement);
+        }
+        
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+    }
+    
+    clearInputValidation(input) {
+        input.classList.remove('border-red-500', 'bg-red-50');
+        input.classList.add('border-gray-300');
+        
+        const errorId = input.id + 'Error';
+        const errorElement = document.getElementById(errorId);
+        if (errorElement) {
+            errorElement.classList.add('hidden');
         }
     }
     
