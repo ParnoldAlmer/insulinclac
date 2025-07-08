@@ -174,15 +174,17 @@ class InsulinCalculator {
     }
 
     calculateResults(values) {
-        // Total units needed = units/dose × doses/day × days
-        let totalUnits = values.unitsPerDose * values.doseFrequency * values.daySupply;
+        // Baseline units needed = units/dose × doses/day × days
+        const baselineUnits = values.unitsPerDose * values.doseFrequency * values.daySupply;
         
-        // Add wastage if enabled (5-10% overhead plus priming)
-        if (this.includeWastage) {
-            const wastagePercent = 0.075; // 7.5% average wastage
-            const primingUnits = Math.ceil(totalUnits / (values.unitsPerDose * values.doseFrequency)) * 2; // 2 units per pen priming
-            totalUnits = totalUnits * (1 + wastagePercent) + primingUnits;
+        // Calculate priming waste based on manufacturer specifications
+        let primingUnits = 0;
+        if (this.includeWastage && this.selectedPen && this.selectedPen.priming_units) {
+            primingUnits = this.selectedPen.priming_units * values.doseFrequency * values.daySupply;
         }
+        
+        // Total units needed = baseline + priming waste
+        const totalUnits = baselineUnits + primingUnits;
         
         // Total mL needed = total units ÷ units/mL
         const totalML = totalUnits / values.concentration;
@@ -197,6 +199,8 @@ class InsulinCalculator {
         }
         
         return {
+            baselineUnits: Math.round(baselineUnits * 100) / 100,
+            primingUnits: Math.round(primingUnits * 100) / 100,
             totalUnits: Math.round(totalUnits * 100) / 100,
             totalML: Math.round(totalML * 100) / 100,
             pensToOrder,
@@ -213,18 +217,25 @@ class InsulinCalculator {
     }
     
     generateDischargeText(values, results) {
-        const totalUnitsCalculated = this.includeWastage ? 
-            `${results.totalUnits} units (includes 7.5% priming/dead space loss)` : 
-            `${results.totalUnits} units`;
+        let breakdown = `Baseline units: ${results.baselineUnits}\n`;
+        
+        if (this.includeWastage && results.primingUnits > 0) {
+            const primingUnitsPerInjection = this.selectedPen ? this.selectedPen.priming_units : 0;
+            breakdown += `Priming waste (${primingUnitsPerInjection} U × ${values.doseFrequency} injections): ${results.primingUnits} units\n`;
+        }
+        
+        breakdown += `Total units needed: ${results.totalUnits} units\n\n`;
         
         const pensNeeded = results.pensToOrder;
         const willDispenseText = pensNeeded >= 2 ? 
             'Pharmacy will likely dispense 1 box (5 pens) if 2+ pens are needed.' : 
             'Pharmacy will dispense the exact number of pens needed.';
         
+        breakdown += `Pens Needed: ${pensNeeded}\n\n${willDispenseText}\n\n`;
+        
         const copayCardInfo = '💡 Most copay cards (e.g., Lantus, Tresiba) cover a 30-day supply based on daily dose — not the number of pens or boxes. The pharmacy will match your Sig with an appropriate fill.';
         
-        return `Total Units Needed: ${totalUnitsCalculated}\n\nPens Needed: ${pensNeeded}\n\n${willDispenseText}\n\n${copayCardInfo}`;
+        return breakdown + copayCardInfo;
     }
     
     generateRxSig(values, results) {
@@ -425,8 +436,9 @@ class InsulinCalculator {
                         // Add $35 tag for pens with GoodRx pricing
                         const hasGoodRxPricing = ['lantus-solostar', 'toujeo-solostar', 'admelog-solostar', 'apidra-solostar'].includes(pen.value);
                         const priceTag = hasGoodRxPricing ? ' $35' : '';
+                        const primingTag = pen.priming_units ? ` [${pen.priming_units}U priming]` : '';
                         
-                        option.textContent = `${pen.brand} - ${pen.generic} (${pen.concentration} U/mL, ${pen.volume} mL)${priceTag}`;
+                        option.textContent = `${pen.brand} - ${pen.generic} (${pen.concentration} U/mL, ${pen.volume} mL)${primingTag}${priceTag}`;
                         optgroup.appendChild(option);
                     });
                     

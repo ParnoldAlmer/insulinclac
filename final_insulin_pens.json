@@ -14,7 +14,8 @@
         "0088-2219-00",
         "0088-2219-01"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     },
     {
       "value": "toujeo-solostar",
@@ -28,7 +29,8 @@
       "ndc_codes": [
         "0024-5869-03"
       ],
-      "pens_per_box": 3
+      "pens_per_box": 3,
+      "priming_units": 3
     },
     {
       "value": "levemir-flextouch",
@@ -42,7 +44,8 @@
       "ndc_codes": [
         "0169-6438-10"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     },
     {
       "value": "tresiba-flextouch",
@@ -56,7 +59,8 @@
       "ndc_codes": [
         "0169-2660-15"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     },
     {
       "value": "tresiba-flextouch-u200",
@@ -70,7 +74,8 @@
       "ndc_codes": [
         "0169-2550-97"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     },
     {
       "value": "basaglar-kwikpen",
@@ -86,7 +91,8 @@
         "0002-7715-01",
         "0002-7715-63"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     }
   ],
   "rapid": [
@@ -104,7 +110,8 @@
         "0002-8799-61",
         "0002-8799-59"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     },
     {
       "value": "humalog-kwikpen-u200",
@@ -116,7 +123,8 @@
       "typeGroup": "rapid",
       "rxnorm_cui": 1652239,
       "ndc_codes": [],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     },
     {
       "value": "novolog-flexpen",
@@ -133,7 +141,8 @@
         "00169633897",
         "00169210112"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     },
     {
       "value": "admelog-solostar",
@@ -147,7 +156,8 @@
       "ndc_codes": [
         "00024-5925-05"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     },
     {
       "value": "apidra-solostar",
@@ -161,7 +171,8 @@
       "ndc_codes": [
         "00088-2502-05"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     }
   ],
   "ultra-rapid": [
@@ -177,7 +188,8 @@
       "ndc_codes": [
         "0169-3204-15"
       ],
-      "pens_per_box": 5
+      "pens_per_box": 5,
+      "priming_units": 2
     }
   ]
 }
