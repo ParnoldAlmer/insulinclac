@@ -48,16 +48,22 @@ class InsulinCalculator {
         this.sigGeneration = document.getElementById('sigGeneration');
         this.maxDoseWarning = document.getElementById('maxDoseWarning');
         
-        // Fill Optimizer Elements
+        // Fill Optimizer Elements (Redesigned)
         this.fillOptimizerResults = document.getElementById('fillOptimizerResults');
-        this.recommendedSupply = document.getElementById('recommendedSupply');
-        this.totalUnitsNeeded = document.getElementById('totalUnitsNeeded');
-        this.pensVialsNeeded = document.getElementById('pensVialsNeeded');
-        this.boxesToDispense = document.getElementById('boxesToDispense');
-        this.expirationOptimizationWarning = document.getElementById('expirationOptimizationWarning');
-        this.expirationWarningText = document.getElementById('expirationWarningText');
-        this.costSavingsInfo = document.getElementById('costSavingsInfo');
-        this.costSavingsText = document.getElementById('costSavingsText');
+        this.supply30Card = document.getElementById('supply30Card');
+        this.supply90Card = document.getElementById('supply90Card');
+        this.supply30Badge = document.getElementById('supply30Badge');
+        this.supply90Badge = document.getElementById('supply90Badge');
+        this.supply30Units = document.getElementById('supply30Units');
+        this.supply30Pens = document.getElementById('supply30Pens');
+        this.supply30Boxes = document.getElementById('supply30Boxes');
+        this.supply30Status = document.getElementById('supply30Status');
+        this.supply90Units = document.getElementById('supply90Units');
+        this.supply90Pens = document.getElementById('supply90Pens');
+        this.supply90Boxes = document.getElementById('supply90Boxes');
+        this.supply90Status = document.getElementById('supply90Status');
+        this.optimizationSummary = document.getElementById('optimizationSummary');
+        this.summaryText = document.getElementById('summaryText');
         
         this.insulinPens = null;
         this.selectedPen = null;
@@ -1210,65 +1216,134 @@ class InsulinCalculator {
     displayFillOptimization(optimization) {
         if (!optimization || !this.fillOptimizerResults) return;
         
-        const rec = optimization.recommended;
+        const scenarios = optimization.scenarios;
+        const recommended = optimization.recommended;
         const formulation = optimization.formulation;
         
-        // Update main display elements
-        this.recommendedSupply.textContent = `${rec.recommendedDays} days`;
-        this.totalUnitsNeeded.textContent = `${rec.totalUnitsNeeded} units`;
+        // Populate 30-day card
+        this.populateSupplyCard('30', scenarios[30], formulation, recommended.recommendedDays === 30);
         
-        if (formulation.containerType === 'pen') {
-            this.pensVialsNeeded.textContent = `${rec.containersNeeded} pens`;
-            this.boxesToDispense.textContent = `${rec.boxesNeeded} box${rec.boxesNeeded > 1 ? 'es' : ''} (${rec.totalContainers} pens)`;
-        } else {
-            this.pensVialsNeeded.textContent = `${rec.containersNeeded} vials`;
-            this.boxesToDispense.textContent = `${rec.containersNeeded} vial${rec.containersNeeded > 1 ? 's' : ''}`;
-        }
+        // Populate 90-day card
+        this.populateSupplyCard('90', scenarios[90], formulation, recommended.recommendedDays === 90);
         
-        // Show expiration warning if applicable
-        if (rec.pensExpiredBeforeUse > 0) {
-            const wasteMessage = `This ${rec.recommendedDays}-day supply may result in ${rec.pensExpiredBeforeUse} wasted ${formulation.containerType}${rec.pensExpiredBeforeUse > 1 ? 's' : ''} due to expiration (${Math.round(rec.wastePercentage)}% waste).`;
-            this.showExpirationOptimizationWarning(wasteMessage);
-        } else {
-            this.hideExpirationOptimizationWarning();
-        }
-        
-        // Show cost savings info for 90-day fills
-        if (rec.recommendedDays === 90 && rec.reason === 'cost-efficiency') {
-            const savingsMessage = `90-day fills typically reduce copays and pharmacy visits. Estimated ${Math.round(rec.costEfficiency)}% cost efficiency.`;
-            this.showCostSavingsInfo(savingsMessage);
-        } else {
-            this.hideCostSavingsInfo();
-        }
+        // Update summary message
+        const summaryMessage = this.generateSummaryMessage(recommended, formulation);
+        this.summaryText.textContent = summaryMessage;
         
         this.fillOptimizerResults.classList.remove('hidden');
     }
     
-    showExpirationOptimizationWarning(message) {
-        if (this.expirationWarningText && this.expirationOptimizationWarning) {
-            this.expirationWarningText.textContent = message;
-            this.expirationOptimizationWarning.classList.remove('hidden');
+    populateSupplyCard(supplyType, scenario, formulation, isRecommended) {
+        const elements = this.getSupplyElements(supplyType);
+        
+        // Update data
+        elements.units.textContent = `${scenario.totalUnitsNeeded} units`;
+        elements.pens.textContent = `${scenario.containersNeeded} ${formulation.containerType}${scenario.containersNeeded > 1 ? 's' : ''}`;
+        
+        if (formulation.containerType === 'pen') {
+            elements.boxes.textContent = `${scenario.boxesNeeded} box${scenario.boxesNeeded > 1 ? 'es' : ''} (${scenario.totalContainers} pens)`;
+        } else {
+            elements.boxes.textContent = `${scenario.containersNeeded} vial${scenario.containersNeeded > 1 ? 's' : ''}`;
+        }
+        
+        // Handle recommendation badge and card styling
+        if (isRecommended) {
+            elements.badge.classList.remove('hidden');
+            elements.card.classList.remove('border-gray-200');
+            elements.card.classList.add('border-green-400', 'bg-green-50');
+        } else {
+            elements.badge.classList.add('hidden');
+            elements.card.classList.remove('border-green-400', 'bg-green-50');
+            elements.card.classList.add('border-gray-200');
+        }
+        
+        // Status message (warnings or benefits)
+        this.updateStatusMessage(elements.status, scenario, formulation, supplyType);
+    }
+    
+    getSupplyElements(supplyType) {
+        if (supplyType === '30') {
+            return {
+                card: this.supply30Card,
+                badge: this.supply30Badge,
+                units: this.supply30Units,
+                pens: this.supply30Pens,
+                boxes: this.supply30Boxes,
+                status: this.supply30Status
+            };
+        } else {
+            return {
+                card: this.supply90Card,
+                badge: this.supply90Badge,
+                units: this.supply90Units,
+                pens: this.supply90Pens,
+                boxes: this.supply90Boxes,
+                status: this.supply90Status
+            };
         }
     }
     
-    hideExpirationOptimizationWarning() {
-        if (this.expirationOptimizationWarning) {
-            this.expirationOptimizationWarning.classList.add('hidden');
+    updateStatusMessage(statusElement, scenario, formulation, supplyType) {
+        let statusHTML = '';
+        
+        if (scenario.pensExpiredBeforeUse > 0) {
+            // Warning for wasted pens
+            statusHTML = `
+                <div class="flex items-start space-x-2 text-red-600">
+                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <div class="font-medium">Warning: Wastage Expected</div>
+                        <div class="text-xs mt-1">
+                            ${scenario.pensExpiredBeforeUse} ${formulation.containerType}${scenario.pensExpiredBeforeUse > 1 ? 's' : ''} may expire unused 
+                            (${Math.round(scenario.wastePercentage)}% waste)
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Benefits message
+            if (supplyType === '30') {
+                statusHTML = `
+                    <div class="flex items-start space-x-2 text-green-600">
+                        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <div class="font-medium">No Wasted Pens</div>
+                            <div class="text-xs mt-1">All insulin will be used before expiration</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                statusHTML = `
+                    <div class="flex items-start space-x-2 text-blue-600">
+                        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <div class="font-medium">Cost Efficient</div>
+                            <div class="text-xs mt-1">Reduces pharmacy visits and potential copay savings</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        statusElement.innerHTML = statusHTML;
+    }
+    
+    generateSummaryMessage(recommended, formulation) {
+        if (recommended.reason === 'expiration-waste') {
+            return `30-day supply recommended to minimize ${formulation.containerType} waste due to expiration limits.`;
+        } else if (recommended.reason === 'cost-efficiency') {
+            return `90-day supply recommended for cost savings and convenience with minimal waste.`;
+        } else {
+            return `${recommended.recommendedDays}-day supply provides the best balance of cost and waste prevention.`;
         }
     }
     
-    showCostSavingsInfo(message) {
-        if (this.costSavingsText && this.costSavingsInfo) {
-            this.costSavingsText.textContent = message;
-            this.costSavingsInfo.classList.remove('hidden');
-        }
-    }
-    
-    hideCostSavingsInfo() {
-        if (this.costSavingsInfo) {
-            this.costSavingsInfo.classList.add('hidden');
-        }
-    }
     
     hideFillOptimizer() {
         if (this.fillOptimizerResults) {
