@@ -28,9 +28,6 @@ class InsulinCalculator {
         this.pensToOrderSpan = document.getElementById('pensToOrder');
         this.prescriptionTextP = document.getElementById('prescriptionText');
         
-        this.boxInfoDiv = document.getElementById('boxInfo');
-        this.pensPerBoxSpan = document.getElementById('pensPerBox');
-        this.monthsPerBoxSpan = document.getElementById('monthsPerBox');
         
         this.patientWeightInput = document.getElementById('patientWeight');
         this.weightUnitToggle = document.getElementById('weightUnitToggle');
@@ -43,33 +40,13 @@ class InsulinCalculator {
         this.sliderTooltip = document.getElementById('sliderTooltip');
         
         this.wastageToggle = document.getElementById('wastageToggle');
-        this.wastageDisplay = document.getElementById('wastageDisplay');
         this.expirationWarning = document.getElementById('expirationWarning');
         this.sigGeneration = document.getElementById('sigGeneration');
         this.maxDoseWarning = document.getElementById('maxDoseWarning');
-        this.dischargeToggle = document.getElementById('dischargeToggle');
-        
-        // Fill Optimizer Elements (Redesigned)
-        this.fillOptimizerResults = document.getElementById('fillOptimizerResults');
-        this.supply30Card = document.getElementById('supply30Card');
-        this.supply90Card = document.getElementById('supply90Card');
-        this.supply30Badge = document.getElementById('supply30Badge');
-        this.supply90Badge = document.getElementById('supply90Badge');
-        this.supply30Units = document.getElementById('supply30Units');
-        this.supply30Pens = document.getElementById('supply30Pens');
-        this.supply30Boxes = document.getElementById('supply30Boxes');
-        this.supply30Status = document.getElementById('supply30Status');
-        this.supply90Units = document.getElementById('supply90Units');
-        this.supply90Pens = document.getElementById('supply90Pens');
-        this.supply90Boxes = document.getElementById('supply90Boxes');
-        this.supply90Status = document.getElementById('supply90Status');
-        this.optimizationSummary = document.getElementById('optimizationSummary');
-        this.summaryText = document.getElementById('summaryText');
         
         this.insulinPens = null;
         this.selectedPen = null;
         this.includeWastage = true;
-        this.isDischargeMode = true;
         
         // Max dose limits per injection for insulin pens (in units)
         this.maxDoseLimits = {
@@ -88,38 +65,8 @@ class InsulinCalculator {
             'apidra-solostar': 60   // Typical for rapid-acting pens
         };
         
-        // Insulin formulation data for fill optimization
-        this.insulinFormulations = {
-            // Units per pen/vial based on concentration and volume
-            'u100-pen': { unitsPerContainer: 300, containerType: 'pen', volume: 3, pensPerBox: 5 },  // 3mL pen
-            'u200-pen': { unitsPerContainer: 600, containerType: 'pen', volume: 3, pensPerBox: 3 },  // 3mL pen
-            'u300-pen': { unitsPerContainer: 450, containerType: 'pen', volume: 1.5, pensPerBox: 3 }, // 1.5mL pen
-            'u500-vial': { unitsPerContainer: 10000, containerType: 'vial', volume: 20, pensPerBox: 1 } // 20mL vial
-        };
-        
-        // Pen expiration after first use (in days)
-        this.penExpirationDays = {
-            'lantus-solostar': 56,
-            'basaglar-kwikpen': 56,
-            'tresiba-flextouch': 56,
-            'tresiba-flextouch-u200': 56,
-            'levemir-flextouch': 56,
-            'toujeo-solostar': 56,
-            'toujeo-max-solostar': 56,
-            'humalog-kwikpen': 28,
-            'humalog-kwikpen-u200': 28,
-            'novolog-flexpen': 56,
-            'fiasp-flextouch': 56,
-            'admelog-solostar': 28,
-            'apidra-solostar': 56
-        };
         
         this.populateDropdown();
-        
-        // Initialize discharge mode if enabled by default
-        if (this.isDischargeMode) {
-            this.daySupplyInput.disabled = true;
-        }
     }
 
     bindEvents() {
@@ -162,19 +109,6 @@ class InsulinCalculator {
             });
         }
         
-        // Discharge toggle event
-        if (this.dischargeToggle) {
-            this.dischargeToggle.addEventListener('change', () => {
-                this.isDischargeMode = this.dischargeToggle.checked;
-                if (this.isDischargeMode) {
-                    this.daySupplyInput.value = 30;
-                    this.daySupplyInput.disabled = true;
-                } else {
-                    this.daySupplyInput.disabled = false;
-                }
-                this.calculate();
-            });
-        }
         
         // Live calculation on input change
         const inputs = [
@@ -326,42 +260,17 @@ class InsulinCalculator {
             return;
         }
         
-        if (this.isDischargeMode) {
-            // Discharge mode display
-            this.totalUnitsSpan.textContent = `${results.totalUnits} units`;
-            this.totalMLSpan.textContent = `${results.totalML} mL`;
-            this.pensToOrderSpan.textContent = results.pensToOrder;
-            
-            // Custom discharge prescription text
-            const values = this.getInputValues();
-            const dischargeText = this.generateDischargeText(values, results);
-            this.prescriptionTextP.textContent = dischargeText;
-            
-            // Hide wastage display in discharge mode
-            if (this.wastageDisplay) {
-                this.wastageDisplay.textContent = '';
-            }
-        } else {
-            // Standard mode display
-            this.totalUnitsSpan.textContent = `${results.totalUnits} units`;
-            this.totalMLSpan.textContent = `${results.totalML} mL`;
-            this.pensToOrderSpan.textContent = results.pensToOrder;
-            this.prescriptionTextP.textContent = prescriptionNote;
-            
-            // Show wastage info if enabled
-            if (this.wastageDisplay) {
-                this.wastageDisplay.textContent = results.wastageIncluded ? 
-                    '(Includes 7.5% wastage + priming)' : '';
-            }
-        }
+        // Always use discharge mode display
+        this.totalUnitsSpan.textContent = `${results.totalUnits} units`;
+        this.totalMLSpan.textContent = `${results.totalML} mL`;
+        this.pensToOrderSpan.textContent = results.pensToOrder;
         
-        // Show expiration warning if needed and not in discharge mode
-        if (results.expirationWarning && !this.isDischargeMode) {
-            this.showExpirationWarning(results.expirationWarning);
-        }
+        // Custom discharge prescription text
+        const values = this.getInputValues();
+        const dischargeText = this.generateDischargeText(values, results);
+        this.prescriptionTextP.textContent = dischargeText;
         
         // Generate and display Rx Sig
-        const values = this.getInputValues();
         const rxSig = this.generateRxSig(values, results);
         if (this.sigGeneration) {
             this.sigGeneration.innerHTML = `
@@ -378,15 +287,6 @@ class InsulinCalculator {
         // Show warnings if any
         if (validation.warnings.length > 0) {
             this.showCalculationWarnings(validation.warnings);
-        }
-        
-        this.updateResultsUI();
-        
-        // Run fill optimization only if not in discharge mode
-        if (!this.isDischargeMode) {
-            this.runFillOptimization(values, results);
-        } else {
-            this.hideFillOptimizer();
         }
         
         this.resultsDiv.classList.remove('hidden');
@@ -452,7 +352,6 @@ class InsulinCalculator {
         this.errorDiv.querySelector('p').textContent = errors.join('. ');
         this.errorDiv.classList.remove('hidden');
         this.resultsDiv.classList.add('hidden');
-        this.boxInfoDiv.classList.add('hidden');
     }
 
     calculate() {
@@ -590,26 +489,7 @@ class InsulinCalculator {
     }
 
     updateResultsUI() {
-        if (this.selectedPen && this.selectedPen.pens_per_box && !this.isDischargeMode) {
-            const values = this.getInputValues();
-            const results = this.calculateResults(values);
-            
-            this.pensPerBoxSpan.textContent = this.selectedPen.pens_per_box;
-            
-            const penVolumeInUnits = values.concentration * values.volumePerPen;
-            const dailyDose = values.unitsPerDose * values.doseFrequency;
-            const monthsPerBox = (this.selectedPen.pens_per_box * penVolumeInUnits) / (dailyDose * 30);
-            
-            // Calculate boxes needed
-            const boxesNeeded = Math.ceil(results.pensToOrder / this.selectedPen.pens_per_box);
-            const totalPensInBoxes = boxesNeeded * this.selectedPen.pens_per_box;
-            
-            this.monthsPerBoxSpan.textContent = `${boxesNeeded} boxes (${totalPensInBoxes} total pens)`;
-            
-            this.boxInfoDiv.classList.remove('hidden');
-        } else {
-            this.boxInfoDiv.classList.add('hidden');
-        }
+        // No additional UI updates needed in discharge mode
     }
 
     showDisclaimer() {
@@ -1138,485 +1018,8 @@ class InsulinCalculator {
             this.maxDoseWarning.classList.add('hidden');
         }
     }
-    
-    runFillOptimization(values, results) {
-        if (!this.selectedPen || !values.unitsPerDose || !values.doseFrequency || this.isDischargeMode) {
-            this.hideFillOptimizer();
-            return;
-        }
-        
-        const dailyDose = values.unitsPerDose * values.doseFrequency;
-        const optimization = this.calculateOptimalFill(dailyDose, values.daySupply);
-        
-        this.displayFillOptimization(optimization);
-    }
-    
-    calculateOptimalFill(dailyDose, requestedDaySupply) {
-        const selectedValue = this.penSelect.value;
-        
-        // Determine formulation type based on selected pen
-        const formulation = this.getFormulationType(selectedValue);
-        const expirationDays = this.penExpirationDays[selectedValue] || 56;
-        
-        // Calculate for both 30 and 90 day supplies
-        const scenarios = {
-            30: this.calculateScenario(dailyDose, 30, formulation, expirationDays),
-            90: this.calculateScenario(dailyDose, 90, formulation, expirationDays)
-        };
-        
-        // Determine optimal recommendation
-        const recommendation = this.determineOptimalScenario(scenarios, requestedDaySupply, expirationDays);
-        
-        return {
-            recommended: recommendation,
-            scenarios,
-            dailyDose,
-            expirationDays,
-            formulation
-        };
-    }
-    
-    getFormulationType(penValue) {
-        if (!this.selectedPen) return this.insulinFormulations['u100-pen'];
-        
-        const concentration = this.selectedPen.concentration;
-        const volume = this.selectedPen.volume;
-        
-        if (concentration === 100 && volume === 3) return this.insulinFormulations['u100-pen'];
-        if (concentration === 200 && volume === 3) return this.insulinFormulations['u200-pen'];
-        if (concentration === 300 && volume === 1.5) return this.insulinFormulations['u300-pen'];
-        if (concentration === 500 && volume === 20) return this.insulinFormulations['u500-vial'];
-        
-        // Default to U-100 pen
-        return this.insulinFormulations['u100-pen'];
-    }
-    
-    calculateScenario(dailyDose, daySupply, formulation, expirationDays) {
-        // Get current user inputs for accurate calculation
-        const values = this.getInputValues();
-        
-        // Calculate using the new accurate method
-        const calculation = this.calculateAccurateInsulinNeeds({
-            daySupply: daySupply,
-            unitsPerDose: values.unitsPerDose,
-            dosesPerDay: values.doseFrequency,
-            insulinConcentration: values.concentration,
-            penVolumeML: values.volumePerPen,
-            pensPerBox: formulation.pensPerBox,
-            includePrimingWaste: this.includeWastage,
-            primingUnitsPerDose: 2,
-            percentWastage: 7.5
-        });
-        
-        // Check for expiration-based waste (unopened pens that expire)
-        const daysToUseOnePen = Math.ceil(formulation.unitsPerContainer / dailyDose);
-        const pensExpiredBeforeUse = this.calculateExpirationWaste(
-            calculation.pensNeeded, 
-            daysToUseOnePen, 
-            expirationDays, 
-            daySupply
-        );
-        
-        return {
-            daySupply,
-            totalUnitsRequired: calculation.totalUnitsRequired,
-            pensNeeded: calculation.pensNeeded,
-            boxesToOrder: calculation.boxesToOrder,
-            leftoverOpenPenUnits: calculation.leftoverOpenPenUnits,
-            percentWastedFromOpenPens: calculation.percentWastedFromOpenPens,
-            pensExpiredBeforeUse,
-            totalWastePercentage: this.calculateTotalWastePercentage(calculation, pensExpiredBeforeUse),
-            costEfficiency: this.calculateCostEfficiency(daySupply, pensExpiredBeforeUse, calculation.pensNeeded),
-            // Legacy properties for compatibility
-            totalUnitsNeeded: calculation.totalUnitsRequired,
-            containersNeeded: calculation.pensNeeded,
-            totalContainers: calculation.pensNeeded,
-            boxesNeeded: calculation.boxesToOrder,
-            daysToUseOnePen,
-            wastePercentage: calculation.percentWastedFromOpenPens
-        };
-    }
-    
-    calculateAccurateInsulinNeeds(params) {
-        const {
-            daySupply,
-            unitsPerDose,
-            dosesPerDay,
-            insulinConcentration,
-            penVolumeML,
-            pensPerBox,
-            includePrimingWaste = false,
-            primingUnitsPerDose = 2,
-            percentWastage = 7.5
-        } = params;
-        
-        // Step 1: Calculate total units required
-        let baseUnits = unitsPerDose * dosesPerDay * daySupply;
-        
-        // Add priming waste if enabled
-        if (includePrimingWaste) {
-            const primingUnits = primingUnitsPerDose * dosesPerDay * daySupply;
-            baseUnits += primingUnits;
-        }
-        
-        // Add percentage wastage
-        const totalUnitsRequired = baseUnits * (1 + percentWastage / 100);
-        
-        // Step 2: Determine units per pen
-        const unitsPerPen = insulinConcentration * penVolumeML;
-        
-        // Step 3: Calculate pens needed
-        const pensNeeded = Math.ceil(totalUnitsRequired / unitsPerPen);
-        
-        // Step 4: Calculate total units in opened pens
-        const totalUnitsInOpenedPens = pensNeeded * unitsPerPen;
-        
-        // Step 5: Calculate leftover units from the final pen
-        const leftoverOpenPenUnits = totalUnitsInOpenedPens - totalUnitsRequired;
-        
-        // Step 6: Compute percent wasted from opened pens only
-        const percentWastedFromOpenPens = (leftoverOpenPenUnits / totalUnitsInOpenedPens) * 100;
-        
-        // Step 7: Determine boxes to order
-        const boxesToOrder = Math.ceil(pensNeeded / pensPerBox);
-        
-        return {
-            totalUnitsRequired: Math.round(totalUnitsRequired * 100) / 100,
-            unitsPerPen,
-            pensNeeded,
-            totalUnitsInOpenedPens,
-            leftoverOpenPenUnits: Math.round(leftoverOpenPenUnits * 100) / 100,
-            percentWastedFromOpenPens: Math.round(percentWastedFromOpenPens * 100) / 100,
-            boxesToOrder,
-            // Additional metrics
-            baseUnits: Math.round(baseUnits * 100) / 100,
-            primingUnits: includePrimingWaste ? Math.round((primingUnitsPerDose * dosesPerDay * daySupply) * 100) / 100 : 0,
-            wastageUnits: Math.round((totalUnitsRequired - baseUnits) * 100) / 100
-        };
-    }
-    
-    calculateTotalWastePercentage(calculation, pensExpiredBeforeUse) {
-        const totalPensOrdered = calculation.pensNeeded;
-        const leftoverUnits = calculation.leftoverOpenPenUnits;
-        const expiredPenUnits = pensExpiredBeforeUse * calculation.unitsPerPen;
-        
-        const totalWastedUnits = leftoverUnits + expiredPenUnits;
-        const totalUnitsOrdered = totalPensOrdered * calculation.unitsPerPen;
-        
-        return Math.round((totalWastedUnits / totalUnitsOrdered) * 100 * 100) / 100;
-    }
-    
-    calculateExpirationWaste(totalContainers, daysToUseOne, expirationDays, daySupply) {
-        // If a pen takes longer to use than its expiration, it will be wasted
-        if (daysToUseOne > expirationDays) {
-            return totalContainers; // All pens will expire
-        }
-        
-        // Calculate how many pens can be used within the supply period
-        const pensUsableDuringSupply = Math.floor(daySupply / daysToUseOne);
-        const pensUsableWithinExpiration = Math.floor(expirationDays / daysToUseOne);
-        
-        // The limiting factor determines actual usage
-        const actuallyUsablePens = Math.min(pensUsableDuringSupply, pensUsableWithinExpiration, totalContainers);
-        
-        return Math.max(0, totalContainers - actuallyUsablePens);
-    }
-    
-    calculateCostEfficiency(daySupply, wastedPens, totalPens) {
-        const utilizationRate = ((totalPens - wastedPens) / totalPens) * 100;
-        const daySupplyMultiplier = daySupply / 30; // Base efficiency on 30-day fills
-        
-        return utilizationRate * daySupplyMultiplier;
-    }
-    
-    determineOptimalScenario(scenarios, requestedDaySupply, expirationDays) {
-        const scenario30 = scenarios[30];
-        const scenario90 = scenarios[90];
-        
-        // If 90-day results in significant waste (>20%), recommend 30-day
-        if (scenario90.wastePercentage > 20) {
-            return {
-                recommendedDays: 30,
-                reason: 'expiration-waste',
-                ...scenario30
-            };
-        }
-        
-        // If cost efficiency of 90-day is significantly better, recommend it
-        if (scenario90.costEfficiency > scenario30.costEfficiency * 1.2) {
-            return {
-                recommendedDays: 90,
-                reason: 'cost-efficiency',
-                ...scenario90
-            };
-        }
-        
-        // Default to requested day supply if no clear advantage
-        const selectedScenario = scenarios[requestedDaySupply] || scenario30;
-        return {
-            recommendedDays: requestedDaySupply,
-            reason: 'user-preference',
-            ...selectedScenario
-        };
-    }
-    
-    displayFillOptimization(optimization) {
-        if (!optimization || !this.fillOptimizerResults) return;
-        
-        const scenarios = optimization.scenarios;
-        const recommended = optimization.recommended;
-        const formulation = optimization.formulation;
-        
-        // Populate 30-day card
-        this.populateSupplyCard('30', scenarios[30], formulation, recommended.recommendedDays === 30);
-        
-        // Populate 90-day card
-        this.populateSupplyCard('90', scenarios[90], formulation, recommended.recommendedDays === 90);
-        
-        // Update summary message
-        const summaryMessage = this.generateSummaryMessage(recommended, formulation);
-        this.summaryText.textContent = summaryMessage;
-        
-        this.fillOptimizerResults.classList.remove('hidden');
-    }
-    
-    populateSupplyCard(supplyType, scenario, formulation, isRecommended) {
-        const elements = this.getSupplyElements(supplyType);
-        
-        // Update data
-        elements.units.textContent = `${scenario.totalUnitsNeeded} units`;
-        elements.pens.textContent = `${scenario.containersNeeded} ${formulation.containerType}${scenario.containersNeeded > 1 ? 's' : ''}`;
-        
-        if (formulation.containerType === 'pen') {
-            elements.boxes.textContent = `${scenario.boxesNeeded} box${scenario.boxesNeeded > 1 ? 'es' : ''} (${scenario.totalContainers} pens)`;
-        } else {
-            elements.boxes.textContent = `${scenario.containersNeeded} vial${scenario.containersNeeded > 1 ? 's' : ''}`;
-        }
-        
-        // Handle recommendation badge and card styling
-        if (isRecommended) {
-            elements.badge.classList.remove('hidden');
-            elements.card.classList.remove('border-gray-200');
-            elements.card.classList.add('border-green-400', 'bg-green-50');
-        } else {
-            elements.badge.classList.add('hidden');
-            elements.card.classList.remove('border-green-400', 'bg-green-50');
-            elements.card.classList.add('border-gray-200');
-        }
-        
-        // Status message (warnings or benefits)
-        this.updateStatusMessage(elements.status, scenario, formulation, supplyType);
-    }
-    
-    getSupplyElements(supplyType) {
-        if (supplyType === '30') {
-            return {
-                card: this.supply30Card,
-                badge: this.supply30Badge,
-                units: this.supply30Units,
-                pens: this.supply30Pens,
-                boxes: this.supply30Boxes,
-                status: this.supply30Status
-            };
-        } else {
-            return {
-                card: this.supply90Card,
-                badge: this.supply90Badge,
-                units: this.supply90Units,
-                pens: this.supply90Pens,
-                boxes: this.supply90Boxes,
-                status: this.supply90Status
-            };
-        }
-    }
-    
-    updateStatusMessage(statusElement, scenario, formulation, supplyType) {
-        let statusHTML = '';
-        
-        // Check for both expiration waste and leftover waste
-        const hasExpirationWaste = scenario.pensExpiredBeforeUse > 0;
-        const hasLeftoverWaste = scenario.leftoverOpenPenUnits > 10; // Significant leftover units
-        const hasAnyWaste = hasExpirationWaste || hasLeftoverWaste;
-        
-        if (hasAnyWaste) {
-            // Warning for wasted insulin
-            let wasteDetails = [];
-            
-            if (hasLeftoverWaste) {
-                wasteDetails.push(`${scenario.leftoverOpenPenUnits} units leftover in final pen (${scenario.percentWastedFromOpenPens}% of opened pens)`);
-            }
-            
-            if (hasExpirationWaste) {
-                wasteDetails.push(`${scenario.pensExpiredBeforeUse} pen${scenario.pensExpiredBeforeUse > 1 ? 's' : ''} may expire unopened`);
-            }
-            
-            statusHTML = `
-                <div class="flex items-start space-x-2 text-red-600">
-                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div>
-                        <div class="font-medium">Insulin Waste Expected</div>
-                        <div class="text-xs mt-1">
-                            ${wasteDetails.join(', ')}
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            // Benefits message - no significant waste
-            if (supplyType === '30') {
-                statusHTML = `
-                    <div class="flex items-start space-x-2 text-green-600">
-                        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        <div>
-                            <div class="font-medium">Minimal Waste</div>
-                            <div class="text-xs mt-1">
-                                Only ${scenario.leftoverOpenPenUnits} units leftover (${scenario.percentWastedFromOpenPens}% of opened pens)
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                statusHTML = `
-                    <div class="flex items-start space-x-2 text-blue-600">
-                        <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        <div>
-                            <div class="font-medium">Cost Efficient</div>
-                            <div class="text-xs mt-1">
-                                ${scenario.leftoverOpenPenUnits} units leftover (${scenario.percentWastedFromOpenPens}% waste), reduces pharmacy visits
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-        
-        statusElement.innerHTML = statusHTML;
-    }
-    
-    generateSummaryMessage(recommended, formulation) {
-        const leftoverWaste = recommended.leftoverOpenPenUnits || 0;
-        const leftoverPercent = recommended.percentWastedFromOpenPens || 0;
-        
-        if (recommended.reason === 'expiration-waste') {
-            return `30-day supply recommended to prevent unopened pens from expiring. Only ${leftoverWaste} units (${leftoverPercent}%) wasted from opened pens.`;
-        } else if (recommended.reason === 'cost-efficiency') {
-            return `90-day supply recommended for cost savings. ${leftoverWaste} units (${leftoverPercent}%) leftover from final pen is acceptable waste.`;
-        } else {
-            return `${recommended.recommendedDays}-day supply provides optimal balance: ${leftoverWaste} units (${leftoverPercent}%) waste from opened pens.`;
-        }
-    }
-    
-    
-    hideFillOptimizer() {
-        if (this.fillOptimizerResults) {
-            this.fillOptimizerResults.classList.add('hidden');
-        }
-    }
 }
 
-// Standalone function for accurate insulin fill calculations
-function calculateInsulinFillOptimization(params) {
-    const {
-        daySupply,
-        unitsPerDose,
-        dosesPerDay,
-        insulinConcentration = 100,
-        penVolumeML = 3,
-        pensPerBox = 5,
-        includePrimingWaste = false,
-        primingUnitsPerDose = 2,
-        percentWastage = 7.5
-    } = params;
-    
-    // Step 1: Calculate total units required
-    let baseUnits = unitsPerDose * dosesPerDay * daySupply;
-    
-    // Add priming waste if enabled
-    if (includePrimingWaste) {
-        const primingUnits = primingUnitsPerDose * dosesPerDay * daySupply;
-        baseUnits += primingUnits;
-    }
-    
-    // Add percentage wastage
-    const totalUnitsRequired = baseUnits * (1 + percentWastage / 100);
-    
-    // Step 2: Determine units per pen
-    const unitsPerPen = insulinConcentration * penVolumeML;
-    
-    // Step 3: Calculate pens needed
-    const pensNeeded = Math.ceil(totalUnitsRequired / unitsPerPen);
-    
-    // Step 4: Calculate total units in opened pens
-    const totalUnitsInOpenedPens = pensNeeded * unitsPerPen;
-    
-    // Step 5: Calculate leftover units from the final pen
-    const leftoverOpenPenUnits = totalUnitsInOpenedPens - totalUnitsRequired;
-    
-    // Step 6: Compute percent wasted from opened pens only
-    const percentWastedFromOpenPens = (leftoverOpenPenUnits / totalUnitsInOpenedPens) * 100;
-    
-    // Step 7: Determine boxes to order
-    const boxesToOrder = Math.ceil(pensNeeded / pensPerBox);
-    
-    return {
-        // Input summary
-        daySupply,
-        unitsPerDose,
-        dosesPerDay,
-        baseUnits: Math.round(baseUnits * 100) / 100,
-        primingUnits: includePrimingWaste ? Math.round((primingUnitsPerDose * dosesPerDay * daySupply) * 100) / 100 : 0,
-        wastageUnits: Math.round((totalUnitsRequired - baseUnits) * 100) / 100,
-        
-        // Main calculations
-        totalUnitsRequired: Math.round(totalUnitsRequired * 100) / 100,
-        unitsPerPen,
-        pensNeeded,
-        boxesToOrder,
-        
-        // Waste analysis (opened pens only)
-        totalUnitsInOpenedPens,
-        leftoverOpenPenUnits: Math.round(leftoverOpenPenUnits * 100) / 100,
-        percentWastedFromOpenPens: Math.round(percentWastedFromOpenPens * 100) / 100,
-        
-        // Cost metrics
-        costPerUsedUnit: (pensNeeded * unitsPerPen) / totalUnitsRequired,
-        utilizationRate: (totalUnitsRequired / (pensNeeded * unitsPerPen)) * 100
-    };
-}
-
-// Comparison function for 30-day vs 90-day fills
-function compareInsulinFillOptions(baseParams) {
-    const supply30 = calculateInsulinFillOptimization({...baseParams, daySupply: 30});
-    const supply90 = calculateInsulinFillOptimization({...baseParams, daySupply: 90});
-    
-    // Determine recommendation based on waste and cost efficiency
-    let recommendation = '30-day';
-    let reason = 'Lower waste percentage';
-    
-    if (supply90.percentWastedFromOpenPens < supply30.percentWastedFromOpenPens * 1.5 && 
-        supply90.leftoverOpenPenUnits < 50) {
-        recommendation = '90-day';
-        reason = 'Better cost efficiency with acceptable waste';
-    }
-    
-    return {
-        supply30,
-        supply90,
-        recommendation,
-        reason,
-        comparison: {
-            wasteDifference: supply90.percentWastedFromOpenPens - supply30.percentWastedFromOpenPens,
-            costEfficiencyRatio: supply30.costPerUsedUnit / supply90.costPerUsedUnit,
-            totalPensSaved: (supply30.pensNeeded * 3) - supply90.pensNeeded // Assuming 3 refills per year
-        }
-    };
-}
 
 // Initialize the calculator when the page loads
 document.addEventListener('DOMContentLoaded', () => {
