@@ -43,6 +43,8 @@ class InsulinCalculator {
         this.expirationWarning = document.getElementById('expirationWarning');
         this.sigGeneration = document.getElementById('sigGeneration');
         this.maxDoseWarning = document.getElementById('maxDoseWarning');
+        this.primingHelpBtn = document.getElementById('primingHelpBtn');
+        this.primingHelpTooltip = document.getElementById('primingHelpTooltip');
         
         this.insulinPens = null;
         this.selectedPen = null;
@@ -101,11 +103,25 @@ class InsulinCalculator {
             }
         });
         
-        // Wastage toggle event
+        // Priming loss toggle event
         if (this.wastageToggle) {
             this.wastageToggle.addEventListener('change', () => {
                 this.includeWastage = this.wastageToggle.checked;
                 this.calculate();
+            });
+        }
+        
+        // Priming help tooltip event
+        if (this.primingHelpBtn && this.primingHelpTooltip) {
+            this.primingHelpBtn.addEventListener('click', () => {
+                this.primingHelpTooltip.classList.toggle('hidden');
+            });
+            
+            // Close tooltip when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!this.primingHelpBtn.contains(e.target) && !this.primingHelpTooltip.contains(e.target)) {
+                    this.primingHelpTooltip.classList.add('hidden');
+                }
             });
         }
         
@@ -177,14 +193,18 @@ class InsulinCalculator {
         // Baseline units needed = units/dose × doses/day × days
         const baselineUnits = values.unitsPerDose * values.doseFrequency * values.daySupply;
         
-        // Calculate priming waste based on manufacturer specifications
-        let primingUnits = 0;
+        // Calculate priming loss based on manufacturer specifications
+        let primingLoss = 0;
+        let primingUnitsPerDose = 0;
+        
         if (this.includeWastage && this.selectedPen && this.selectedPen.priming_units) {
-            primingUnits = this.selectedPen.priming_units * values.doseFrequency * values.daySupply;
+            primingUnitsPerDose = this.selectedPen.priming_units;
+            // priming_loss = priming_units × injections_per_day × days_supply
+            primingLoss = primingUnitsPerDose * values.doseFrequency * values.daySupply;
         }
         
-        // Total units needed = baseline + priming waste
-        const totalUnits = baselineUnits + primingUnits;
+        // Total units needed = baseline + priming loss
+        const totalUnits = baselineUnits + primingLoss;
         
         // Total mL needed = total units ÷ units/mL
         const totalML = totalUnits / values.concentration;
@@ -200,7 +220,8 @@ class InsulinCalculator {
         
         return {
             baselineUnits: Math.round(baselineUnits * 100) / 100,
-            primingUnits: Math.round(primingUnits * 100) / 100,
+            primingLoss: Math.round(primingLoss * 100) / 100,
+            primingUnitsPerDose,
             totalUnits: Math.round(totalUnits * 100) / 100,
             totalML: Math.round(totalML * 100) / 100,
             pensToOrder,
@@ -219,12 +240,12 @@ class InsulinCalculator {
     generateDischargeText(values, results) {
         let breakdown = `Baseline units: ${results.baselineUnits}\n`;
         
-        if (this.includeWastage && results.primingUnits > 0) {
-            const primingUnitsPerInjection = this.selectedPen ? this.selectedPen.priming_units : 0;
-            breakdown += `Priming waste (${primingUnitsPerInjection} U × ${values.doseFrequency} injections): ${results.primingUnits} units\n`;
+        if (this.includeWastage && results.primingLoss > 0) {
+            breakdown += `Priming loss: ${results.primingLoss} units (based on ${results.primingUnitsPerDose} units × ${values.doseFrequency} × ${values.daySupply})\n`;
+            breakdown += `Total units required (including priming): ${results.totalUnits} units\n\n`;
+        } else {
+            breakdown += `Total units required: ${results.totalUnits} units\n\n`;
         }
-        
-        breakdown += `Total units needed: ${results.totalUnits} units\n\n`;
         
         const pensNeeded = results.pensToOrder;
         const willDispenseText = pensNeeded >= 2 ? 
