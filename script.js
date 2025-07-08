@@ -102,8 +102,20 @@ class InsulinCalculator {
         ];
         
         inputs.forEach(input => {
-            input.addEventListener('input', () => this.calculate());
-            input.addEventListener('change', () => this.calculate());
+            input.addEventListener('input', () => {
+                this.calculate();
+                // Update expiration warning when day supply changes
+                if (input === this.daySupplyInput) {
+                    this.checkExpirationWarning(this.penSelect.value);
+                }
+            });
+            input.addEventListener('change', () => {
+                this.calculate();
+                // Update expiration warning when day supply changes
+                if (input === this.daySupplyInput) {
+                    this.checkExpirationWarning(this.penSelect.value);
+                }
+            });
         });
     }
 
