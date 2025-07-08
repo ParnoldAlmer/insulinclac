@@ -48,6 +48,17 @@ class InsulinCalculator {
         this.sigGeneration = document.getElementById('sigGeneration');
         this.maxDoseWarning = document.getElementById('maxDoseWarning');
         
+        // Fill Optimizer Elements
+        this.fillOptimizerResults = document.getElementById('fillOptimizerResults');
+        this.recommendedSupply = document.getElementById('recommendedSupply');
+        this.totalUnitsNeeded = document.getElementById('totalUnitsNeeded');
+        this.pensVialsNeeded = document.getElementById('pensVialsNeeded');
+        this.boxesToDispense = document.getElementById('boxesToDispense');
+        this.expirationOptimizationWarning = document.getElementById('expirationOptimizationWarning');
+        this.expirationWarningText = document.getElementById('expirationWarningText');
+        this.costSavingsInfo = document.getElementById('costSavingsInfo');
+        this.costSavingsText = document.getElementById('costSavingsText');
+        
         this.insulinPens = null;
         this.selectedPen = null;
         this.includeWastage = true;
@@ -67,6 +78,32 @@ class InsulinCalculator {
             'levemir-flextouch': 80,
             'admelog-solostar': 60, // Same as Humalog U-100
             'apidra-solostar': 60   // Typical for rapid-acting pens
+        };
+        
+        // Insulin formulation data for fill optimization
+        this.insulinFormulations = {
+            // Units per pen/vial based on concentration and volume
+            'u100-pen': { unitsPerContainer: 300, containerType: 'pen', volume: 3, pensPerBox: 5 },  // 3mL pen
+            'u200-pen': { unitsPerContainer: 600, containerType: 'pen', volume: 3, pensPerBox: 3 },  // 3mL pen
+            'u300-pen': { unitsPerContainer: 450, containerType: 'pen', volume: 1.5, pensPerBox: 3 }, // 1.5mL pen
+            'u500-vial': { unitsPerContainer: 10000, containerType: 'vial', volume: 20, pensPerBox: 1 } // 20mL vial
+        };
+        
+        // Pen expiration after first use (in days)
+        this.penExpirationDays = {
+            'lantus-solostar': 56,
+            'basaglar-kwikpen': 56,
+            'tresiba-flextouch': 56,
+            'tresiba-flextouch-u200': 56,
+            'levemir-flextouch': 56,
+            'toujeo-solostar': 56,
+            'toujeo-max-solostar': 56,
+            'humalog-kwikpen': 28,
+            'humalog-kwikpen-u200': 28,
+            'novolog-flexpen': 56,
+            'fiasp-flextouch': 56,
+            'admelog-solostar': 28,
+            'apidra-solostar': 56
         };
         
         this.populateDropdown();
@@ -276,6 +313,9 @@ class InsulinCalculator {
         }
         
         this.updateResultsUI();
+        
+        // Run fill optimization
+        this.runFillOptimization(values, results);
         
         this.resultsDiv.classList.remove('hidden');
         this.errorDiv.classList.add('hidden');
@@ -1024,6 +1064,215 @@ class InsulinCalculator {
     hideMaxDoseWarning() {
         if (this.maxDoseWarning) {
             this.maxDoseWarning.classList.add('hidden');
+        }
+    }
+    
+    runFillOptimization(values, results) {
+        if (!this.selectedPen || !values.unitsPerDose || !values.doseFrequency) {
+            this.hideFillOptimizer();
+            return;
+        }
+        
+        const dailyDose = values.unitsPerDose * values.doseFrequency;
+        const optimization = this.calculateOptimalFill(dailyDose, values.daySupply);
+        
+        this.displayFillOptimization(optimization);
+    }
+    
+    calculateOptimalFill(dailyDose, requestedDaySupply) {
+        const selectedValue = this.penSelect.value;
+        
+        // Determine formulation type based on selected pen
+        const formulation = this.getFormulationType(selectedValue);
+        const expirationDays = this.penExpirationDays[selectedValue] || 56;
+        
+        // Calculate for both 30 and 90 day supplies
+        const scenarios = {
+            30: this.calculateScenario(dailyDose, 30, formulation, expirationDays),
+            90: this.calculateScenario(dailyDose, 90, formulation, expirationDays)
+        };
+        
+        // Determine optimal recommendation
+        const recommendation = this.determineOptimalScenario(scenarios, requestedDaySupply, expirationDays);
+        
+        return {
+            recommended: recommendation,
+            scenarios,
+            dailyDose,
+            expirationDays,
+            formulation
+        };
+    }
+    
+    getFormulationType(penValue) {
+        if (!this.selectedPen) return this.insulinFormulations['u100-pen'];
+        
+        const concentration = this.selectedPen.concentration;
+        const volume = this.selectedPen.volume;
+        
+        if (concentration === 100 && volume === 3) return this.insulinFormulations['u100-pen'];
+        if (concentration === 200 && volume === 3) return this.insulinFormulations['u200-pen'];
+        if (concentration === 300 && volume === 1.5) return this.insulinFormulations['u300-pen'];
+        if (concentration === 500 && volume === 20) return this.insulinFormulations['u500-vial'];
+        
+        // Default to U-100 pen
+        return this.insulinFormulations['u100-pen'];
+    }
+    
+    calculateScenario(dailyDose, daySupply, formulation, expirationDays) {
+        const totalUnitsNeeded = dailyDose * daySupply;
+        const containersNeeded = Math.ceil(totalUnitsNeeded / formulation.unitsPerContainer);
+        
+        let boxesNeeded = 1;
+        let totalContainers = containersNeeded;
+        
+        if (formulation.containerType === 'pen') {
+            boxesNeeded = Math.ceil(containersNeeded / formulation.pensPerBox);
+            totalContainers = boxesNeeded * formulation.pensPerBox;
+        }
+        
+        // Calculate potential waste due to expiration
+        const daysToUseOnePen = Math.ceil(formulation.unitsPerContainer / dailyDose);
+        const pensExpiredBeforeUse = this.calculateExpirationWaste(
+            totalContainers, 
+            daysToUseOnePen, 
+            expirationDays, 
+            daySupply
+        );
+        
+        return {
+            daySupply,
+            totalUnitsNeeded,
+            containersNeeded,
+            totalContainers,
+            boxesNeeded,
+            daysToUseOnePen,
+            pensExpiredBeforeUse,
+            wastePercentage: (pensExpiredBeforeUse / totalContainers) * 100,
+            costEfficiency: this.calculateCostEfficiency(daySupply, pensExpiredBeforeUse, totalContainers)
+        };
+    }
+    
+    calculateExpirationWaste(totalContainers, daysToUseOne, expirationDays, daySupply) {
+        // If a pen takes longer to use than its expiration, it will be wasted
+        if (daysToUseOne > expirationDays) {
+            return totalContainers; // All pens will expire
+        }
+        
+        // Calculate how many pens can be used within the supply period
+        const pensUsableDuringSupply = Math.floor(daySupply / daysToUseOne);
+        const pensUsableWithinExpiration = Math.floor(expirationDays / daysToUseOne);
+        
+        // The limiting factor determines actual usage
+        const actuallyUsablePens = Math.min(pensUsableDuringSupply, pensUsableWithinExpiration, totalContainers);
+        
+        return Math.max(0, totalContainers - actuallyUsablePens);
+    }
+    
+    calculateCostEfficiency(daySupply, wastedPens, totalPens) {
+        const utilizationRate = ((totalPens - wastedPens) / totalPens) * 100;
+        const daySupplyMultiplier = daySupply / 30; // Base efficiency on 30-day fills
+        
+        return utilizationRate * daySupplyMultiplier;
+    }
+    
+    determineOptimalScenario(scenarios, requestedDaySupply, expirationDays) {
+        const scenario30 = scenarios[30];
+        const scenario90 = scenarios[90];
+        
+        // If 90-day results in significant waste (>20%), recommend 30-day
+        if (scenario90.wastePercentage > 20) {
+            return {
+                recommendedDays: 30,
+                reason: 'expiration-waste',
+                ...scenario30
+            };
+        }
+        
+        // If cost efficiency of 90-day is significantly better, recommend it
+        if (scenario90.costEfficiency > scenario30.costEfficiency * 1.2) {
+            return {
+                recommendedDays: 90,
+                reason: 'cost-efficiency',
+                ...scenario90
+            };
+        }
+        
+        // Default to requested day supply if no clear advantage
+        const selectedScenario = scenarios[requestedDaySupply] || scenario30;
+        return {
+            recommendedDays: requestedDaySupply,
+            reason: 'user-preference',
+            ...selectedScenario
+        };
+    }
+    
+    displayFillOptimization(optimization) {
+        if (!optimization || !this.fillOptimizerResults) return;
+        
+        const rec = optimization.recommended;
+        const formulation = optimization.formulation;
+        
+        // Update main display elements
+        this.recommendedSupply.textContent = `${rec.recommendedDays} days`;
+        this.totalUnitsNeeded.textContent = `${rec.totalUnitsNeeded} units`;
+        
+        if (formulation.containerType === 'pen') {
+            this.pensVialsNeeded.textContent = `${rec.containersNeeded} pens`;
+            this.boxesToDispense.textContent = `${rec.boxesNeeded} box${rec.boxesNeeded > 1 ? 'es' : ''} (${rec.totalContainers} pens)`;
+        } else {
+            this.pensVialsNeeded.textContent = `${rec.containersNeeded} vials`;
+            this.boxesToDispense.textContent = `${rec.containersNeeded} vial${rec.containersNeeded > 1 ? 's' : ''}`;
+        }
+        
+        // Show expiration warning if applicable
+        if (rec.pensExpiredBeforeUse > 0) {
+            const wasteMessage = `This ${rec.recommendedDays}-day supply may result in ${rec.pensExpiredBeforeUse} wasted ${formulation.containerType}${rec.pensExpiredBeforeUse > 1 ? 's' : ''} due to expiration (${Math.round(rec.wastePercentage)}% waste).`;
+            this.showExpirationOptimizationWarning(wasteMessage);
+        } else {
+            this.hideExpirationOptimizationWarning();
+        }
+        
+        // Show cost savings info for 90-day fills
+        if (rec.recommendedDays === 90 && rec.reason === 'cost-efficiency') {
+            const savingsMessage = `90-day fills typically reduce copays and pharmacy visits. Estimated ${Math.round(rec.costEfficiency)}% cost efficiency.`;
+            this.showCostSavingsInfo(savingsMessage);
+        } else {
+            this.hideCostSavingsInfo();
+        }
+        
+        this.fillOptimizerResults.classList.remove('hidden');
+    }
+    
+    showExpirationOptimizationWarning(message) {
+        if (this.expirationWarningText && this.expirationOptimizationWarning) {
+            this.expirationWarningText.textContent = message;
+            this.expirationOptimizationWarning.classList.remove('hidden');
+        }
+    }
+    
+    hideExpirationOptimizationWarning() {
+        if (this.expirationOptimizationWarning) {
+            this.expirationOptimizationWarning.classList.add('hidden');
+        }
+    }
+    
+    showCostSavingsInfo(message) {
+        if (this.costSavingsText && this.costSavingsInfo) {
+            this.costSavingsText.textContent = message;
+            this.costSavingsInfo.classList.remove('hidden');
+        }
+    }
+    
+    hideCostSavingsInfo() {
+        if (this.costSavingsInfo) {
+            this.costSavingsInfo.classList.add('hidden');
+        }
+    }
+    
+    hideFillOptimizer() {
+        if (this.fillOptimizerResults) {
+            this.fillOptimizerResults.classList.add('hidden');
         }
     }
 }
