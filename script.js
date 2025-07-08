@@ -46,9 +46,89 @@ class InsulinCalculator {
         this.primingHelpBtn = document.getElementById('primingHelpBtn');
         this.primingHelpTooltip = document.getElementById('primingHelpTooltip');
         
+        // Timeline and discount elements
+        this.expirationTimeline = document.getElementById('expirationTimeline');
+        this.timelineLabel = document.getElementById('timelineLabel');
+        this.therapyBar = document.getElementById('therapyBar');
+        this.expirationBars = document.getElementById('expirationBars');
+        this.wasteBar = document.getElementById('wasteBar');
+        this.timelineDetails = document.getElementById('timelineDetails');
+        this.discountLinks = document.getElementById('discountLinks');
+        this.discountLinksContent = document.getElementById('discountLinksContent');
+        this.inlineDiscountLinks = document.getElementById('inlineDiscountLinks');
+        this.inlineDiscountContent = document.getElementById('inlineDiscountContent');
+        
         this.insulinPens = null;
         this.selectedPen = null;
         this.includeWastage = true;
+        
+        // Pen expiration after first use (in days)
+        this.penExpirationDays = {
+            'lantus-solostar': 56,
+            'basaglar-kwikpen': 56,
+            'tresiba-flextouch': 56,
+            'tresiba-flextouch-u200': 56,
+            'levemir-flextouch': 56,
+            'toujeo-solostar': 56,
+            'humalog-kwikpen': 28,
+            'humalog-kwikpen-u200': 28,
+            'novolog-flexpen': 56,
+            'fiasp-flextouch': 56,
+            'admelog-solostar': 28,
+            'apidra-solostar': 56
+        };
+        
+        // Discount links for each pen
+        this.penDiscountInfo = {
+            'lantus-solostar': {
+                goodrx: 'https://www.goodrx.com/lantus',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'basaglar-kwikpen': {
+                goodrx: 'https://www.goodrx.com/basaglar',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'tresiba-flextouch': {
+                goodrx: 'https://www.goodrx.com/tresiba',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'tresiba-flextouch-u200': {
+                goodrx: 'https://www.goodrx.com/tresiba',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'levemir-flextouch': {
+                goodrx: 'https://www.goodrx.com/levemir',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'toujeo-solostar': {
+                goodrx: 'https://www.goodrx.com/toujeo',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'humalog-kwikpen': {
+                goodrx: 'https://www.goodrx.com/humalog',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'humalog-kwikpen-u200': {
+                goodrx: 'https://www.goodrx.com/humalog',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'novolog-flexpen': {
+                goodrx: 'https://www.goodrx.com/novolog',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'fiasp-flextouch': {
+                goodrx: 'https://www.goodrx.com/fiasp',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'admelog-solostar': {
+                goodrx: 'https://www.goodrx.com/admelog',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            },
+            'apidra-solostar': {
+                goodrx: 'https://www.goodrx.com/apidra',
+                amazon: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons'
+            }
+        };
         
         // Max dose limits per injection for insulin pens (in units)
         this.maxDoseLimits = {
@@ -313,6 +393,10 @@ class InsulinCalculator {
         if (validation.warnings.length > 0) {
             this.showCalculationWarnings(validation.warnings);
         }
+        
+        // Show timeline and discount links
+        this.displayExpirationTimeline(values, results);
+        this.displayDiscountLinks(values, results);
         
         this.resultsDiv.classList.remove('hidden');
         this.errorDiv.classList.add('hidden');
@@ -1042,6 +1126,138 @@ class InsulinCalculator {
         if (this.maxDoseWarning) {
             this.maxDoseWarning.classList.add('hidden');
         }
+    }
+    
+    displayExpirationTimeline(values, results) {
+        if (!this.selectedPen || !this.expirationTimeline) return;
+        
+        const selectedValue = this.penSelect.value;
+        const expirationDays = this.penExpirationDays[selectedValue] || 56;
+        const therapyDuration = values.daySupply;
+        const pensNeeded = results.pensToOrder;
+        
+        // Calculate pen usage timeline
+        const unitsPerPen = values.concentration * values.volumePerPen;
+        const dailyUsage = values.unitsPerDose * values.doseFrequency;
+        const daysPerPen = Math.floor(unitsPerPen / dailyUsage);
+        
+        // Timeline calculations
+        const totalTimelineLength = Math.max(therapyDuration, pensNeeded * expirationDays);
+        const therapyPercentage = (therapyDuration / totalTimelineLength) * 100;
+        
+        // Update timeline label
+        this.timelineLabel.textContent = `${therapyDuration}-day therapy with ${pensNeeded} pen${pensNeeded > 1 ? 's' : ''}`;
+        
+        // Update therapy duration bar
+        this.therapyBar.style.width = `${therapyPercentage}%`;
+        
+        // Clear and rebuild expiration bars
+        this.expirationBars.innerHTML = '';
+        
+        let wastedPens = 0;
+        let totalUsableDays = 0;
+        
+        for (let i = 0; i < pensNeeded; i++) {
+            const penStartDay = i * daysPerPen;
+            const penEndDay = Math.min(penStartDay + expirationDays, totalTimelineLength);
+            const penUsableLength = (penEndDay - penStartDay) / totalTimelineLength * 100;
+            const penLeftPosition = (penStartDay / totalTimelineLength) * 100;
+            
+            // Check if this pen will be wasted
+            const penWillBeUsed = penStartDay < therapyDuration;
+            if (!penWillBeUsed) {
+                wastedPens++;
+            } else {
+                totalUsableDays += Math.min(expirationDays, therapyDuration - penStartDay);
+            }
+            
+            // Create pen expiration bar
+            const penBar = document.createElement('div');
+            penBar.className = `absolute top-0 h-full border-2 border-white transition-all duration-300 ${
+                penWillBeUsed ? 'bg-green-500' : 'bg-red-300 opacity-60'
+            }`;
+            penBar.style.left = `${penLeftPosition}%`;
+            penBar.style.width = `${penUsableLength}%`;
+            penBar.title = `Pen ${i + 1}: ${penWillBeUsed ? 'Will be used' : 'May be wasted'} (expires after ${expirationDays} days)`;
+            
+            this.expirationBars.appendChild(penBar);
+        }
+        
+        // Update waste bar
+        if (wastedPens > 0) {
+            const wastePercentage = (wastedPens / pensNeeded) * 100;
+            this.wasteBar.style.width = `${wastePercentage}%`;
+        } else {
+            this.wasteBar.style.width = '0%';
+        }
+        
+        // Update timeline details
+        let detailsText = '';
+        if (wastedPens > 0) {
+            detailsText = `⚠️ You will have ${wastedPens} unused pen${wastedPens > 1 ? 's' : ''} before expiration. `;
+        } else if (therapyDuration > totalUsableDays) {
+            detailsText = '⚠️ Therapy may run out before pens expire. ';
+        } else {
+            detailsText = '✅ All pens will be used before expiration. ';
+        }
+        
+        detailsText += `Each pen expires ${expirationDays} days after opening.`;
+        this.timelineDetails.textContent = detailsText;
+        
+        // Show timeline
+        this.expirationTimeline.classList.remove('hidden');
+    }
+    
+    displayDiscountLinks(values, results) {
+        if (!this.selectedPen || !this.discountLinks) return;
+        
+        const selectedValue = this.penSelect.value;
+        const discountInfo = this.penDiscountInfo[selectedValue];
+        
+        if (!discountInfo) {
+            this.discountLinks.classList.add('hidden');
+            this.inlineDiscountLinks.classList.add('hidden');
+            return;
+        }
+        
+        // Create discount links HTML
+        const linksHTML = `
+            <a href="${discountInfo.amazon}" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="inline-flex items-center text-yellow-700 hover:text-yellow-900 underline focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 rounded">
+                📦 Amazon Discount
+            </a>
+            <a href="${discountInfo.goodrx}" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="inline-flex items-center text-yellow-700 hover:text-yellow-900 underline focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 rounded ml-4">
+                💊 GoodRx Coupon
+            </a>
+        `;
+        
+        // Update standalone discount links section
+        this.discountLinksContent.innerHTML = linksHTML;
+        this.discountLinks.classList.remove('hidden');
+        
+        // Update inline discount links in prescription note
+        const inlineLinksHTML = `
+            <a href="${discountInfo.amazon}" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                Amazon Discount
+            </a>
+            <a href="${discountInfo.goodrx}" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                GoodRx Coupon
+            </a>
+        `;
+        
+        this.inlineDiscountContent.innerHTML = inlineLinksHTML;
+        this.inlineDiscountLinks.classList.remove('hidden');
     }
 }
 
