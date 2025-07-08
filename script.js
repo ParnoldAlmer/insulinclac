@@ -47,6 +47,7 @@ class InsulinCalculator {
         this.expirationWarning = document.getElementById('expirationWarning');
         this.sigGeneration = document.getElementById('sigGeneration');
         this.maxDoseWarning = document.getElementById('maxDoseWarning');
+        this.dischargeToggle = document.getElementById('dischargeToggle');
         
         // Fill Optimizer Elements (Redesigned)
         this.fillOptimizerResults = document.getElementById('fillOptimizerResults');
@@ -68,6 +69,7 @@ class InsulinCalculator {
         this.insulinPens = null;
         this.selectedPen = null;
         this.includeWastage = true;
+        this.isDischargeMode = false;
         
         // Max dose limits per injection for insulin pens (in units)
         this.maxDoseLimits = {
@@ -151,6 +153,20 @@ class InsulinCalculator {
         if (this.wastageToggle) {
             this.wastageToggle.addEventListener('change', () => {
                 this.includeWastage = this.wastageToggle.checked;
+                this.calculate();
+            });
+        }
+        
+        // Discharge toggle event
+        if (this.dischargeToggle) {
+            this.dischargeToggle.addEventListener('change', () => {
+                this.isDischargeMode = this.dischargeToggle.checked;
+                if (this.isDischargeMode) {
+                    this.daySupplyInput.value = 30;
+                    this.daySupplyInput.disabled = true;
+                } else {
+                    this.daySupplyInput.disabled = false;
+                }
                 this.calculate();
             });
         }
@@ -257,11 +273,34 @@ class InsulinCalculator {
         return `Order ${results.pensToOrder} pen${results.pensToOrder > 1 ? 's' : ''} of ${insulinType} ${values.concentration} units/mL, use ${values.unitsPerDose} units ${frequency}, ${values.daySupply} day supply`;
     }
     
+    generateDischargeText(values, results) {
+        const totalUnitsCalculated = this.includeWastage ? 
+            `${results.totalUnits} units (includes 7.5% priming/dead space loss)` : 
+            `${results.totalUnits} units`;
+        
+        const pensNeeded = results.pensToOrder;
+        const willDispenseText = pensNeeded >= 2 ? 
+            'Pharmacy will likely dispense 1 box (5 pens) if 2+ pens are needed.' : 
+            'Pharmacy will dispense the exact number of pens needed.';
+        
+        const copayCardInfo = '💡 Most copay cards (e.g., Lantus, Tresiba) cover a 30-day supply based on daily dose — not the number of pens or boxes. The pharmacy will match your Sig with an appropriate fill.';
+        
+        return `Total Units Needed: ${totalUnitsCalculated}\n\nPens Needed: ${pensNeeded}\n\n${willDispenseText}\n\n${copayCardInfo}`;
+    }
+    
     generateRxSig(values, results) {
         const insulinType = this.selectedPen ? this.selectedPen.generic : 'insulin';
         const brandName = this.selectedPen ? this.selectedPen.brand : 'Insulin Pen';
         const frequency = values.doseFrequency === 1 ? 'once daily' : `${values.doseFrequency} times daily`;
-        const ndcCode = this.selectedPen && this.selectedPen.ndc_codes ? this.selectedPen.ndc_codes[0] : 'N/A';
+        
+        // Use 5-pen box NDC for discharge prescriptions
+        let ndcCode = 'N/A';
+        if (this.selectedPen && this.selectedPen.ndc_codes) {
+            // Look for 5-pen box NDC (ending in -05) or use first available
+            const boxNDC = this.selectedPen.ndc_codes.find(ndc => ndc.endsWith('-05'));
+            ndcCode = boxNDC || this.selectedPen.ndc_codes[0];
+        }
+        
         const refills = Math.max(0, Math.floor(365 / values.daySupply) - 1);
         
         return {
@@ -282,19 +321,37 @@ class InsulinCalculator {
             return;
         }
         
-        this.totalUnitsSpan.textContent = `${results.totalUnits} units`;
-        this.totalMLSpan.textContent = `${results.totalML} mL`;
-        this.pensToOrderSpan.textContent = results.pensToOrder;
-        this.prescriptionTextP.textContent = prescriptionNote;
-        
-        // Show wastage info if enabled
-        if (this.wastageDisplay) {
-            this.wastageDisplay.textContent = results.wastageIncluded ? 
-                '(Includes 7.5% wastage + priming)' : '';
+        if (this.isDischargeMode) {
+            // Discharge mode display
+            this.totalUnitsSpan.textContent = `${results.totalUnits} units`;
+            this.totalMLSpan.textContent = `${results.totalML} mL`;
+            this.pensToOrderSpan.textContent = results.pensToOrder;
+            
+            // Custom discharge prescription text
+            const values = this.getInputValues();
+            const dischargeText = this.generateDischargeText(values, results);
+            this.prescriptionTextP.textContent = dischargeText;
+            
+            // Hide wastage display in discharge mode
+            if (this.wastageDisplay) {
+                this.wastageDisplay.textContent = '';
+            }
+        } else {
+            // Standard mode display
+            this.totalUnitsSpan.textContent = `${results.totalUnits} units`;
+            this.totalMLSpan.textContent = `${results.totalML} mL`;
+            this.pensToOrderSpan.textContent = results.pensToOrder;
+            this.prescriptionTextP.textContent = prescriptionNote;
+            
+            // Show wastage info if enabled
+            if (this.wastageDisplay) {
+                this.wastageDisplay.textContent = results.wastageIncluded ? 
+                    '(Includes 7.5% wastage + priming)' : '';
+            }
         }
         
-        // Show expiration warning if needed
-        if (results.expirationWarning) {
+        // Show expiration warning if needed and not in discharge mode
+        if (results.expirationWarning && !this.isDischargeMode) {
             this.showExpirationWarning(results.expirationWarning);
         }
         
@@ -320,8 +377,12 @@ class InsulinCalculator {
         
         this.updateResultsUI();
         
-        // Run fill optimization
-        this.runFillOptimization(values, results);
+        // Run fill optimization only if not in discharge mode
+        if (!this.isDischargeMode) {
+            this.runFillOptimization(values, results);
+        } else {
+            this.hideFillOptimizer();
+        }
         
         this.resultsDiv.classList.remove('hidden');
         this.errorDiv.classList.add('hidden');
@@ -524,7 +585,7 @@ class InsulinCalculator {
     }
 
     updateResultsUI() {
-        if (this.selectedPen && this.selectedPen.pens_per_box) {
+        if (this.selectedPen && this.selectedPen.pens_per_box && !this.isDischargeMode) {
             const values = this.getInputValues();
             const results = this.calculateResults(values);
             
@@ -1074,7 +1135,7 @@ class InsulinCalculator {
     }
     
     runFillOptimization(values, results) {
-        if (!this.selectedPen || !values.unitsPerDose || !values.doseFrequency) {
+        if (!this.selectedPen || !values.unitsPerDose || !values.doseFrequency || this.isDischargeMode) {
             this.hideFillOptimizer();
             return;
         }
