@@ -514,7 +514,7 @@ class InsulinCalculator {
         const weightUnit = this.weightUnitToggle.dataset.unit;
         
         const dosingValues = [0.1, 0.2, 0.3];
-        const dosingRate = dosingValues[sliderValue] || 0.2;
+        const dosingRate = dosingValues[sliderValue] || 0.1;
         
         this.sliderValueSpan.textContent = `${dosingRate} u/kg/day`;
         
