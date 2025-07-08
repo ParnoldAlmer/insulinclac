@@ -41,8 +41,14 @@ class InsulinCalculator {
         this.pricingInfoDiv = document.getElementById('pricingInfo');
         this.pricingTextSpan = document.getElementById('pricingText');
         
+        this.wastageToggle = document.getElementById('wastageToggle');
+        this.wastageDisplay = document.getElementById('wastageDisplay');
+        this.expirationWarning = document.getElementById('expirationWarning');
+        this.sigGeneration = document.getElementById('sigGeneration');
+        
         this.insulinPens = null;
         this.selectedPen = null;
+        this.includeWastage = false;
         
         this.populateDropdown();
     }
@@ -69,12 +75,22 @@ class InsulinCalculator {
                     this.setPenValues(selectedPen.concentration, selectedPen.volume, penType);
                     this.toggleWeightBasedDosing(penType);
                     this.showPricingInfo(selectedValue, selectedPen);
+                    this.checkExpirationWarning(selectedValue);
                 }
             } else {
                 this.toggleWeightBasedDosing(null);
                 this.showPricingInfo(null, null);
+                this.hideExpirationWarning();
             }
         });
+        
+        // Wastage toggle event
+        if (this.wastageToggle) {
+            this.wastageToggle.addEventListener('change', () => {
+                this.includeWastage = this.wastageToggle.checked;
+                this.calculate();
+            });
+        }
         
         // Live calculation on input change
         const inputs = [
@@ -129,18 +145,33 @@ class InsulinCalculator {
 
     calculateResults(values) {
         // Total units needed = units/dose × doses/day × days
-        const totalUnits = values.unitsPerDose * values.doseFrequency * values.daySupply;
+        let totalUnits = values.unitsPerDose * values.doseFrequency * values.daySupply;
+        
+        // Add wastage if enabled (5-10% overhead plus priming)
+        if (this.includeWastage) {
+            const wastagePercent = 0.075; // 7.5% average wastage
+            const primingUnits = Math.ceil(totalUnits / (values.unitsPerDose * values.doseFrequency)) * 2; // 2 units per pen priming
+            totalUnits = totalUnits * (1 + wastagePercent) + primingUnits;
+        }
         
         // Total mL needed = total units ÷ units/mL
         const totalML = totalUnits / values.concentration;
         
         // Pens to order = ceil(total mL ÷ mL per pen)
-        const pensToOrder = Math.ceil(totalML / values.volumePerPen);
+        let pensToOrder = Math.ceil(totalML / values.volumePerPen);
+        
+        // Check expiration constraints
+        const expirationCheck = this.checkPenExpiration(values.daySupply, pensToOrder);
+        if (expirationCheck.needsMorePens) {
+            pensToOrder = expirationCheck.recommendedPens;
+        }
         
         return {
             totalUnits: Math.round(totalUnits * 100) / 100,
             totalML: Math.round(totalML * 100) / 100,
-            pensToOrder
+            pensToOrder,
+            expirationWarning: expirationCheck.warning,
+            wastageIncluded: this.includeWastage
         };
     }
 
@@ -149,6 +180,22 @@ class InsulinCalculator {
         const frequency = values.doseFrequency === 1 ? 'daily' : `${values.doseFrequency} times daily`;
         
         return `Order ${results.pensToOrder} pen${results.pensToOrder > 1 ? 's' : ''} of ${insulinType} ${values.concentration} units/mL, use ${values.unitsPerDose} units ${frequency}, ${values.daySupply} day supply`;
+    }
+    
+    generateRxSig(values, results) {
+        const insulinType = this.selectedPen ? this.selectedPen.generic : 'insulin';
+        const brandName = this.selectedPen ? this.selectedPen.brand : 'Insulin Pen';
+        const frequency = values.doseFrequency === 1 ? 'once daily' : `${values.doseFrequency} times daily`;
+        const ndcCode = this.selectedPen && this.selectedPen.ndc_codes ? this.selectedPen.ndc_codes[0] : 'N/A';
+        const refills = Math.max(0, Math.floor(365 / values.daySupply) - 1);
+        
+        return {
+            sig: `Inject ${values.unitsPerDose} units subcutaneously ${frequency}.`,
+            disp: `Disp: ${results.pensToOrder} pen${results.pensToOrder > 1 ? 's' : ''} (${values.volumePerPen} mL each)`,
+            refills: `Refills: ${refills}`,
+            ndc: `NDC: ${ndcCode}`,
+            fullSig: `${insulinType} ${values.concentration} units/mL pen\n\nInject ${values.unitsPerDose} units subcutaneously ${frequency}.\n\nDisp: ${results.pensToOrder} pen${results.pensToOrder > 1 ? 's' : ''} (${values.volumePerPen} mL each)\nRefills: ${refills}\nNDC: ${ndcCode}`
+        };
     }
 
     displayResults(results, prescriptionNote) {
@@ -164,6 +211,32 @@ class InsulinCalculator {
         this.totalMLSpan.textContent = `${results.totalML} mL`;
         this.pensToOrderSpan.textContent = results.pensToOrder;
         this.prescriptionTextP.textContent = prescriptionNote;
+        
+        // Show wastage info if enabled
+        if (this.wastageDisplay) {
+            this.wastageDisplay.textContent = results.wastageIncluded ? 
+                '(Includes 7.5% wastage + priming)' : '';
+        }
+        
+        // Show expiration warning if needed
+        if (results.expirationWarning) {
+            this.showExpirationWarning(results.expirationWarning);
+        }
+        
+        // Generate and display Rx Sig
+        const values = this.getInputValues();
+        const rxSig = this.generateRxSig(values, results);
+        if (this.sigGeneration) {
+            this.sigGeneration.innerHTML = `
+                <div class="text-sm font-mono bg-gray-50 p-3 rounded border">
+                    <div class="font-bold mb-2">Prescription Sig:</div>
+                    <div>${rxSig.sig}</div>
+                    <div class="mt-2">${rxSig.disp}</div>
+                    <div>${rxSig.refills}</div>
+                    <div>${rxSig.ndc}</div>
+                </div>
+            `;
+        }
         
         // Show warnings if any
         if (validation.warnings.length > 0) {
@@ -375,6 +448,7 @@ class InsulinCalculator {
     updateResultsUI() {
         if (this.selectedPen && this.selectedPen.pens_per_box) {
             const values = this.getInputValues();
+            const results = this.calculateResults(values);
             
             this.pensPerBoxSpan.textContent = this.selectedPen.pens_per_box;
             
@@ -382,7 +456,15 @@ class InsulinCalculator {
             const dailyDose = values.unitsPerDose * values.doseFrequency;
             const monthsPerBox = (this.selectedPen.pens_per_box * penVolumeInUnits) / (dailyDose * 30);
             
-            this.monthsPerBoxSpan.textContent = Math.round(monthsPerBox * 10) / 10 + ' months';
+            // Calculate boxes needed
+            const boxesNeeded = Math.ceil(results.pensToOrder / this.selectedPen.pens_per_box);
+            const totalPensInBoxes = boxesNeeded * this.selectedPen.pens_per_box;
+            
+            this.monthsPerBoxSpan.innerHTML = `
+                <div><strong>Pens needed:</strong> ${results.pensToOrder}</div>
+                <div><strong>Boxes needed:</strong> ${boxesNeeded} (${totalPensInBoxes} total pens)</div>
+                <div><strong>Supply per box:</strong> ${Math.round(monthsPerBox * 10) / 10} months</div>
+            `;
             
             this.boxInfoDiv.classList.remove('hidden');
         } else {
@@ -413,8 +495,8 @@ class InsulinCalculator {
         const sliderValue = parseInt(this.dosingSlider.value);
         const weightUnit = this.weightUnitToggle.dataset.unit;
         
-        const dosingValues = [0.1, 0.2, 0.3];
-        const dosingRate = dosingValues[sliderValue];
+        const dosingValues = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5];
+        const dosingRate = dosingValues[sliderValue] || 0.1;
         
         this.sliderValueSpan.textContent = `${dosingRate} u/kg/day`;
         
@@ -655,6 +737,51 @@ class InsulinCalculator {
         const existingMessage = input.parentNode.querySelector('.validation-message');
         if (existingMessage) {
             existingMessage.remove();
+        }
+    }
+    
+    checkPenExpiration(daySupply, pensToOrder) {
+        const selectedValue = this.penSelect.value;
+        let expirationDays = 84; // Default 84 days for most pens
+        
+        // Tresiba expires in 56 days
+        if (selectedValue === 'tresiba-flextouch') {
+            expirationDays = 56;
+        }
+        
+        // Calculate if day supply exceeds pen expiration
+        if (daySupply > expirationDays) {
+            const pensNeeded = Math.ceil(daySupply / expirationDays);
+            return {
+                needsMorePens: pensNeeded > pensToOrder,
+                recommendedPens: Math.max(pensToOrder, pensNeeded),
+                warning: `This pen expires ${expirationDays} days after first use. For ${daySupply} day supply, you need at least ${pensNeeded} pen${pensNeeded > 1 ? 's' : ''} to avoid expiration.`
+            };
+        }
+        
+        return { needsMorePens: false, recommendedPens: pensToOrder, warning: null };
+    }
+    
+    checkExpirationWarning(penValue) {
+        const daySupply = parseFloat(this.daySupplyInput.value) || 30;
+        
+        if (penValue === 'tresiba-flextouch' && daySupply > 56) {
+            this.showExpirationWarning(`⚠️ Tresiba expires 56 days after first use. Consider multiple pens for ${daySupply} day supply.`);
+        } else {
+            this.hideExpirationWarning();
+        }
+    }
+    
+    showExpirationWarning(message) {
+        if (this.expirationWarning) {
+            this.expirationWarning.textContent = message;
+            this.expirationWarning.classList.remove('hidden');
+        }
+    }
+    
+    hideExpirationWarning() {
+        if (this.expirationWarning) {
+            this.expirationWarning.classList.add('hidden');
         }
     }
 }
