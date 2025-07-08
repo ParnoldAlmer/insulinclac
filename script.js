@@ -47,8 +47,6 @@ class InsulinCalculator {
         this.primingHelpTooltip = document.getElementById('primingHelpTooltip');
         
         // Discount elements
-        this.discountLinks = document.getElementById('discountLinks');
-        this.discountLinksContent = document.getElementById('discountLinksContent');
         this.inlineDiscountLinks = document.getElementById('inlineDiscountLinks');
         this.inlineDiscountContent = document.getElementById('inlineDiscountContent');
         
@@ -1111,38 +1109,15 @@ class InsulinCalculator {
     
     
     displayDiscountLinks(values, results) {
-        if (!this.selectedPen || !this.discountLinks) return;
+        if (!this.selectedPen || !this.inlineDiscountLinks) return;
         
         const selectedValue = this.penSelect.value;
         const discountInfo = this.penDiscountInfo[selectedValue];
         
         if (!discountInfo) {
-            this.discountLinks.classList.add('hidden');
             this.inlineDiscountLinks.classList.add('hidden');
             return;
         }
-        
-        const penBrand = this.selectedPen.brand || 'Selected Pen';
-        
-        // Create enhanced discount links HTML
-        const linksHTML = `
-            <a href="${discountInfo.amazon}" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               class="inline-flex items-center px-3 py-2 bg-orange-100 text-orange-700 hover:bg-orange-200 hover:text-orange-800 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
-                📦 Amazon Discount
-            </a>
-            <a href="${discountInfo.goodrx}" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               class="inline-flex items-center px-3 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 hover:text-purple-800 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
-                💊 GoodRx Coupon
-            </a>
-        `;
-        
-        // Update standalone discount links section
-        this.discountLinksContent.innerHTML = linksHTML;
-        this.discountLinks.classList.remove('hidden');
         
         // Update inline discount links in prescription note
         const inlineLinksHTML = `
