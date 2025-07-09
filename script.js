@@ -595,10 +595,9 @@ class InsulinCalculator {
                 
                 // Add pen options
                 this.insulinPens[category].forEach(pen => {
-                    const hasDiscount = this.penDiscountInfo[pen.value] && 
-                                       (this.penDiscountInfo[pen.value].goodrx || 
-                                        this.penDiscountInfo[pen.value].lilly || 
-                                        this.penDiscountInfo[pen.value].novocare);
+                    // Only show $35 indicator for Sanofi products with GoodRx pricing
+                    const hasGoodRxDiscount = this.penDiscountInfo[pen.value] && 
+                                             this.penDiscountInfo[pen.value].goodrx;
                     
                     const option = document.createElement('button');
                     option.type = 'button';
@@ -609,11 +608,11 @@ class InsulinCalculator {
                         <div class="flex-1">
                             <div class="flex items-center">
                                 <span class="mr-2">💉</span>
-                                <span class="font-medium">${hasDiscount ? '💰 ' : ''}${pen.brand}</span>
+                                <span class="font-medium">${hasGoodRxDiscount ? '💰 ' : ''}${pen.brand}</span>
                             </div>
                             <div class="text-xs text-gray-500 mt-1">
                                 ${pen.concentration} units/mL • ${pen.volume} mL
-                                ${hasDiscount ? ' • $35/month available' : ''}
+                                ${hasGoodRxDiscount ? ' • $35/month available' : ''}
                             </div>
                         </div>
                     `;
@@ -1337,13 +1336,11 @@ class InsulinCalculator {
         this.selectedPen = this.findPenByValue(penValue);
         
         if (penValue && this.selectedPen) {
-            // Update button label
-            const hasDiscount = this.penDiscountInfo[penValue] && 
-                               (this.penDiscountInfo[penValue].goodrx || 
-                                this.penDiscountInfo[penValue].lilly || 
-                                this.penDiscountInfo[penValue].novocare);
+            // Update button label - only show 💰 for Sanofi products with GoodRx pricing
+            const hasGoodRxDiscount = this.penDiscountInfo[penValue] && 
+                                     this.penDiscountInfo[penValue].goodrx;
             
-            this.penSelectLabel.textContent = `${hasDiscount ? '💰 ' : ''}${this.selectedPen.brand}`;
+            this.penSelectLabel.textContent = `${hasGoodRxDiscount ? '💰 ' : ''}${this.selectedPen.brand}`;
             this.penSelectLabel.classList.remove('text-gray-500');
             this.penSelectLabel.classList.add('text-gray-900');
             
