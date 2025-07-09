@@ -91,23 +91,23 @@ class InsulinCalculator {
             
             // Novo Nordisk pens - NovoCare + Amazon
             'novolog-flexpen': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             },
             'fiasp-flextouch': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             },
             'levemir-flextouch': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             },
             'tresiba-flextouch': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             },
             'tresiba-flextouch-u200': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-affording-your-medicine/savings-offers.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
             }
         };
