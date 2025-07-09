@@ -222,14 +222,14 @@ class InsulinCalculator {
                 this.calculate();
                 // Update expiration warning when day supply changes
                 if (input === this.daySupplyInput) {
-                    this.checkExpirationWarning(this.penSelect.value);
+                    this.checkExpirationWarning(this.penSelect);
                 }
             });
             input.addEventListener('change', () => {
                 this.calculate();
                 // Update expiration warning when day supply changes
                 if (input === this.daySupplyInput) {
-                    this.checkExpirationWarning(this.penSelect.value);
+                    this.checkExpirationWarning(this.penSelect);
                 }
             });
         });
@@ -683,7 +683,7 @@ class InsulinCalculator {
             this.doseFrequencyInput.value = 1;
         }
         
-        const selectedValue = this.penSelect.value;
+        const selectedValue = this.penSelect;
         this.selectedPen = selectedValue ? this.findPenByValue(selectedValue) : null;
         
         this.calculate();
@@ -1163,7 +1163,7 @@ class InsulinCalculator {
     }
     
     checkPenExpiration(daySupply, pensToOrder) {
-        const selectedValue = this.penSelect.value;
+        const selectedValue = this.penSelect;
         let expirationDays = 84; // Default 84 days for most pens
         
         // Tresiba expires in 56 days
@@ -1208,7 +1208,7 @@ class InsulinCalculator {
     }
     
     checkMaxDoseLimit() {
-        const selectedValue = this.penSelect.value;
+        const selectedValue = this.penSelect;
         const dose = parseFloat(this.unitsPerDoseInput.value);
         
         // Clear warning if no pen selected or no dose entered
@@ -1248,7 +1248,7 @@ class InsulinCalculator {
     displayDiscountLinks(values, results) {
         if (!this.selectedPen || !this.inlineDiscountLinks) return;
         
-        const selectedValue = this.penSelect.value;
+        const selectedValue = this.penSelect; // penSelect is now the string value directly
         const discountInfo = this.penDiscountInfo[selectedValue];
         
         if (!discountInfo) {
