@@ -60,55 +60,55 @@ class InsulinCalculator {
             // Sanofi pens - GoodRx $35/month + Amazon
             'lantus-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/lantus?label_override=lantus&form=carton&dosage=5-solostar-pens-of-3ml&quantity=1&drugId=37030', text: 'GoodRx $35/month Coupon' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'toujeo-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/toujeo', text: 'GoodRx $35/month Coupon' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'admelog-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/admelog', text: 'GoodRx $35/month Coupon' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'apidra-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/apidra', text: 'GoodRx $35/month Coupon' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             
             // Lilly pens - Lilly Insulin Savings + Amazon
             'humalog-kwikpen': {
                 lilly: { url: 'https://www.insulinaffordability.com/', text: 'Lilly Insulin Savings' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'humalog-kwikpen-u200': {
                 lilly: { url: 'https://www.insulinaffordability.com/', text: 'Lilly Insulin Savings' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'basaglar-kwikpen': {
                 lilly: { url: 'https://www.insulinaffordability.com/', text: 'Lilly Insulin Savings' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             
             // Novo Nordisk pens - NovoCare + Amazon
             'novolog-flexpen': {
                 novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'fiasp-flextouch': {
                 novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'levemir-flextouch': {
                 novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'tresiba-flextouch': {
                 novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'tresiba-flextouch-u200': {
                 novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Check Amazon for manufacturer coupons' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             }
         };
         
