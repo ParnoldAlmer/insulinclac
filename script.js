@@ -14,6 +14,7 @@ class InsulinCalculator {
         this.penSelectorModal = document.getElementById('penSelectorModal');
         this.penSelectorContent = document.getElementById('penSelectorContent');
         this.closePenModal = document.getElementById('closePenModal');
+        this.currentPenId = null; // Currently selected pen ID
         this.penSelect = null; // Will be set to selected pen value for compatibility
         this.daySupplyInput = document.getElementById('daySupply');
         this.unitsPerDoseInput = document.getElementById('unitsPerDose');
@@ -1355,6 +1356,7 @@ class InsulinCalculator {
     }
 
     selectPen(penValue) {
+        this.currentPenId = penValue; // Track currently selected pen
         this.penSelect = penValue; // Set for compatibility
         this.selectedPen = this.findPenByValue(penValue);
         
@@ -1376,6 +1378,7 @@ class InsulinCalculator {
             this.checkMaxDoseLimit();
         } else {
             // Reset to default
+            this.currentPenId = null;
             this.penSelectLabel.textContent = 'Select an insulin pen...';
             this.penSelectLabel.classList.add('text-gray-500');
             this.penSelectLabel.classList.remove('text-gray-900');
@@ -1395,22 +1398,37 @@ class InsulinCalculator {
         }
     }
 
-    updateModalSelection() {
-        // Update visual selection in modal - loop through all pen cards
+    clearAllPenSelections() {
+        // Aggressively clear all selection styles from all pen cards
+        if (!this.penSelectorContent) return;
+        
         const allCards = this.penSelectorContent.querySelectorAll('.pen-card');
         allCards.forEach(card => {
-            const cardPenId = card.getAttribute('data-pen-id');
-            
-            // First, clear all selection styles from every card
-            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300');
+            // Remove ALL possible selection-related classes
+            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300', 'border-blue-500');
+            // Ensure default styling
             card.classList.add('bg-white', 'border-gray-200');
-            
-            // Then apply selection styles only to the selected card
-            if (cardPenId === this.penSelect) {
-                card.classList.remove('bg-white', 'border-gray-200');
-                card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300');
-            }
         });
+    }
+
+    updateModalSelection() {
+        // Update visual selection in modal - ensure only one pen is highlighted
+        if (!this.penSelectorContent) return;
+        
+        console.log('Updating modal selection. Current pen ID:', this.currentPenId);
+        
+        // First, aggressively clear ALL selections
+        this.clearAllPenSelections();
+        
+        // Then apply selection styles ONLY to the currently selected card
+        if (this.currentPenId) {
+            const selectedCard = this.penSelectorContent.querySelector(`[data-pen-id="${this.currentPenId}"]`);
+            if (selectedCard) {
+                console.log('Applying selection styles to:', this.currentPenId);
+                selectedCard.classList.remove('bg-white', 'border-gray-200');
+                selectedCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300');
+            }
+        }
     }
 
 }
