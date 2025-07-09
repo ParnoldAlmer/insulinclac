@@ -600,7 +600,7 @@ class InsulinCalculator {
                     
                     const penCard = document.createElement('button');
                     penCard.type = 'button';
-                    penCard.className = 'pen-card rounded-lg shadow px-4 py-3 hover:ring hover:ring-blue-300 transition text-left bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500';
+                    penCard.className = 'pen-card rounded-lg shadow px-4 py-3 hover:ring hover:ring-blue-300 transition text-left bg-white border border-gray-200 focus:outline-none';
                     penCard.setAttribute('data-pen-value', pen.value);
                     penCard.setAttribute('data-pen-id', pen.value); // Add data-pen-id for consistency
                     
@@ -651,10 +651,13 @@ class InsulinCalculator {
         // Update visual selection to match current state
         this.updateModalSelection();
         
-        // Focus first pen card for accessibility
+        // Focus first pen card for accessibility (but not the selected one to avoid focus ring confusion)
         const firstPenCard = this.penSelectorContent.querySelector('.pen-card');
         if (firstPenCard && !this.isMobile()) {
-            firstPenCard.focus();
+            // Only focus if it's not the selected card to avoid focus ring on selected item
+            if (firstPenCard.getAttribute('data-pen-id') !== this.currentPenId) {
+                firstPenCard.focus();
+            }
         }
     }
 
@@ -1407,6 +1410,8 @@ class InsulinCalculator {
             card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300', 'border-blue-500');
             // Ensure default styling matches initial card creation
             card.classList.add('bg-white', 'border', 'border-gray-200');
+            // Clear focus to prevent persistent focus rings
+            card.blur();
         });
     }
 
