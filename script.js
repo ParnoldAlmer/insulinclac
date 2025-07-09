@@ -600,7 +600,7 @@ class InsulinCalculator {
                     
                     const penCard = document.createElement('button');
                     penCard.type = 'button';
-                    penCard.className = 'pen-card rounded-lg shadow px-4 py-3 hover:ring hover:ring-blue-300 transition text-left bg-white border border-gray-200 focus:outline-none';
+                    penCard.className = 'pen-card rounded-lg shadow px-4 py-4 sm:py-3 hover:ring hover:ring-blue-300 transition text-left bg-white border border-gray-200 focus:outline-none min-h-[64px] sm:min-h-[auto] active:bg-gray-50';
                     penCard.setAttribute('data-pen-value', pen.value);
                     penCard.setAttribute('data-pen-id', pen.value); // Add data-pen-id for consistency
                     
