@@ -80,7 +80,7 @@
     {
       "value": "basaglar-kwikpen",
       "brand": "Basaglar KwikPen",
-      "generic": "Insulin glargine (biosimilar)",
+      "generic": "Insulin glargine biosimilar",
       "concentration": 100,
       "volume": 3,
       "notes": "Long-acting",
@@ -147,7 +147,7 @@
     {
       "value": "admelog-solostar",
       "brand": "Admelog SoloStar",
-      "generic": "Insulin lispro (biosimilar)",
+      "generic": "Insulin lispro biosimilar",
       "concentration": 100,
       "volume": 3,
       "notes": "Rapid-acting",

@@ -1376,7 +1376,9 @@ class InsulinCalculator {
             const hasGoodRxDiscount = this.penDiscountInfo[penValue] && 
                                      this.penDiscountInfo[penValue].goodrx;
             
-            this.penSelectLabel.textContent = `${hasGoodRxDiscount ? '💰 ' : ''}${this.selectedPen.brand} (${this.selectedPen.generic})`;
+            const labelText = `${hasGoodRxDiscount ? '💰 ' : ''}${this.selectedPen.brand} (${this.selectedPen.generic})`;
+            console.log('Setting pen label to:', labelText);
+            this.penSelectLabel.textContent = labelText;
             this.penSelectLabel.classList.remove('text-gray-500');
             this.penSelectLabel.classList.add('text-gray-900');
             
