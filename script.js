@@ -375,10 +375,15 @@ class InsulinCalculator {
         
         // Use 5-pen box NDC for discharge prescriptions
         let ndcCode = 'N/A';
+        console.log('generateRxSig - selectedPen:', this.selectedPen);
         if (this.selectedPen && this.selectedPen.ndc_codes) {
+            console.log('NDC codes available:', this.selectedPen.ndc_codes);
             // Look for 5-pen box NDC (ending in -05) or use first available
             const boxNDC = this.selectedPen.ndc_codes.find(ndc => ndc.endsWith('-05'));
             ndcCode = boxNDC || this.selectedPen.ndc_codes[0];
+            console.log('Selected NDC:', ndcCode);
+        } else {
+            console.log('No selectedPen or no ndc_codes');
         }
         
         return {
