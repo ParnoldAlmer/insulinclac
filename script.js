@@ -641,6 +641,26 @@ class InsulinCalculator {
         });
     }
 
+    // Modal methods
+    openModal() {
+        this.penSelectorModal.classList.remove('hidden');
+        this.penSelectButton.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus first pen card for accessibility
+        const firstPenCard = this.penSelectorContent.querySelector('button[data-pen-value]');
+        if (firstPenCard && !this.isMobile()) {
+            firstPenCard.focus();
+        }
+    }
+
+    closeModal() {
+        this.penSelectorModal.classList.add('hidden');
+        this.penSelectButton.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        this.penSelectButton.focus();
+    }
+
     setPenValues(unitsPerMl, mlPerPen, penType = null) {
         this.concentrationInput.value = unitsPerMl;
         this.volumePerPenInput.value = mlPerPen;
@@ -1280,26 +1300,6 @@ class InsulinCalculator {
         
         this.inlineDiscountContent.innerHTML = linksHTML;
         this.inlineDiscountLinks.classList.remove('hidden');
-    }
-
-    // Modal methods
-    openModal() {
-        this.penSelectorModal.classList.remove('hidden');
-        this.penSelectButton.setAttribute('aria-expanded', 'true');
-        document.body.style.overflow = 'hidden';
-        
-        // Focus first pen card for accessibility
-        const firstPenCard = this.penSelectorContent.querySelector('button[data-pen-value]');
-        if (firstPenCard && !this.isMobile()) {
-            firstPenCard.focus();
-        }
-    }
-
-    closeModal() {
-        this.penSelectorModal.classList.add('hidden');
-        this.penSelectButton.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-        this.penSelectButton.focus();
     }
 
     // Mobile detection helper with iOS-specific detection
