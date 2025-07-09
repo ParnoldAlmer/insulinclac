@@ -556,6 +556,9 @@ class InsulinCalculator {
             
             // Set default selection to Lantus SoloStar
             this.selectPen('lantus-solostar');
+            
+            // Ensure modal selection state is properly initialized
+            this.updateModalSelection();
         } catch (error) {
             console.error('Error loading insulin pens:', error);
         }
@@ -1396,14 +1399,15 @@ class InsulinCalculator {
         const allCards = this.penSelectorContent.querySelectorAll('button[data-pen-value]');
         allCards.forEach(card => {
             const cardValue = card.getAttribute('data-pen-value');
+            
+            // First, clear all selection styles from every card
+            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+            card.classList.add('bg-white', 'border-gray-200');
+            
+            // Then apply selection styles only to the selected card
             if (cardValue === this.penSelect) {
-                // Selected card styling
                 card.classList.remove('bg-white', 'border-gray-200');
                 card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
-            } else {
-                // Unselected card styling
-                card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
-                card.classList.add('bg-white', 'border-gray-200');
             }
         });
     }
