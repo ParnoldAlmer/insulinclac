@@ -1421,17 +1421,19 @@ class InsulinCalculator {
         // Create dropdown element
         this.penSelectDropdown = document.createElement('div');
         this.penSelectDropdown.id = 'penSelectDropdown';
-        this.penSelectDropdown.className = 'fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg hidden';
+        this.penSelectDropdown.className = 'ios-scroll-fix fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[70vh] overflow-y-auto hidden';
         
         // iOS Safari specific fixes
         this.penSelectDropdown.style.position = 'fixed';
         this.penSelectDropdown.style.zIndex = '9999';
-        this.penSelectDropdown.style.maxHeight = '70vh';
-        this.penSelectDropdown.style.overflowY = 'auto';
         this.penSelectDropdown.style.overflowX = 'hidden';
         this.penSelectDropdown.style.minWidth = '200px';
-        this.penSelectDropdown.style.WebkitOverflowScrolling = 'touch'; // iOS momentum scrolling
         this.penSelectDropdown.style.transform = 'translateZ(0)'; // Force hardware acceleration
+        
+        // Desktop fallback height
+        if (window.innerWidth > 768) {
+            this.penSelectDropdown.style.maxHeight = '300px';
+        }
         
         // Accessibility attributes
         this.penSelectDropdown.setAttribute('role', 'listbox');
@@ -1477,11 +1479,17 @@ class InsulinCalculator {
             // Position above the button
             const availableHeight = Math.min(dropdownMaxHeight, spaceAbove - 4);
             top = buttonTop - availableHeight - 4;
-            this.penSelectDropdown.style.maxHeight = `${availableHeight}px`;
+            // Use inline style for dynamic height when needed
+            if (availableHeight < dropdownMaxHeight) {
+                this.penSelectDropdown.style.maxHeight = `${availableHeight}px`;
+            }
         } else {
             // Position below the button
             const availableHeight = Math.min(dropdownMaxHeight, spaceBelow - 4);
-            this.penSelectDropdown.style.maxHeight = `${availableHeight}px`;
+            // Use inline style for dynamic height when needed
+            if (availableHeight < dropdownMaxHeight) {
+                this.penSelectDropdown.style.maxHeight = `${availableHeight}px`;
+            }
         }
         
         // Ensure dropdown doesn't go off screen horizontally
