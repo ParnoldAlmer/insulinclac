@@ -555,11 +555,10 @@ class InsulinCalculator {
             // Populate modal content
             this.populateModalContent();
             
-            // Set default selection to Lantus SoloStar
-            this.selectPen('lantus-solostar');
-            
-            // Ensure modal selection state is properly initialized
-            this.updateModalSelection();
+            // Set default selection to Lantus SoloStar after DOM is ready
+            setTimeout(() => {
+                this.selectPen('lantus-solostar');
+            }, 0);
         } catch (error) {
             console.error('Error loading insulin pens:', error);
         }
@@ -1406,8 +1405,8 @@ class InsulinCalculator {
         allCards.forEach(card => {
             // Remove ALL possible selection-related classes
             card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300', 'border-blue-500');
-            // Ensure default styling
-            card.classList.add('bg-white', 'border-gray-200');
+            // Ensure default styling matches initial card creation
+            card.classList.add('bg-white', 'border', 'border-gray-200');
         });
     }
 
@@ -1425,8 +1424,8 @@ class InsulinCalculator {
             const selectedCard = this.penSelectorContent.querySelector(`[data-pen-id="${this.currentPenId}"]`);
             if (selectedCard) {
                 console.log('Applying selection styles to:', this.currentPenId);
-                selectedCard.classList.remove('bg-white', 'border-gray-200');
-                selectedCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300');
+                selectedCard.classList.remove('bg-white', 'border', 'border-gray-200');
+                selectedCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'border', 'border-blue-300');
             }
         }
     }
