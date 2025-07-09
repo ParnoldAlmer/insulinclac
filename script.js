@@ -1423,15 +1423,16 @@ class InsulinCalculator {
         this.penSelectDropdown.id = 'penSelectDropdown';
         this.penSelectDropdown.className = 'ios-scroll-fix fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[70vh] overflow-y-auto hidden';
         
-        // iOS Safari specific fixes
+        // iOS Safari specific fixes - avoid overriding overflow styles
         this.penSelectDropdown.style.position = 'fixed';
         this.penSelectDropdown.style.zIndex = '9999';
         this.penSelectDropdown.style.overflowX = 'hidden';
         this.penSelectDropdown.style.minWidth = '200px';
         this.penSelectDropdown.style.transform = 'translateZ(0)'; // Force hardware acceleration
+        this.penSelectDropdown.style.WebkitOverflowScrolling = 'touch'; // Ensure iOS momentum scrolling
         
-        // Desktop fallback height
-        if (window.innerWidth > 768) {
+        // Desktop fallback height - only set if not mobile
+        if (window.innerWidth > 768 && !this.isMobile()) {
             this.penSelectDropdown.style.maxHeight = '300px';
         }
         
@@ -1479,15 +1480,15 @@ class InsulinCalculator {
             // Position above the button
             const availableHeight = Math.min(dropdownMaxHeight, spaceAbove - 4);
             top = buttonTop - availableHeight - 4;
-            // Use inline style for dynamic height when needed
-            if (availableHeight < dropdownMaxHeight) {
+            // Only set height for desktop or when significantly constrained
+            if (!this.isMobile() && availableHeight < dropdownMaxHeight * 0.8) {
                 this.penSelectDropdown.style.maxHeight = `${availableHeight}px`;
             }
         } else {
             // Position below the button
             const availableHeight = Math.min(dropdownMaxHeight, spaceBelow - 4);
-            // Use inline style for dynamic height when needed
-            if (availableHeight < dropdownMaxHeight) {
+            // Only set height for desktop or when significantly constrained
+            if (!this.isMobile() && availableHeight < dropdownMaxHeight * 0.8) {
                 this.penSelectDropdown.style.maxHeight = `${availableHeight}px`;
             }
         }
@@ -1516,6 +1517,11 @@ class InsulinCalculator {
         if (!this.penSelectDropdown) {
             this.createDropdown();
             this.populateCustomDropdown();
+        }
+        
+        // Reset max-height for iOS scrolling before positioning
+        if (this.isMobile()) {
+            this.penSelectDropdown.style.maxHeight = '';
         }
         
         // Position and show dropdown

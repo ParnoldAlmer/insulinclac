@@ -55,6 +55,18 @@
         /* iOS-compatible scrolling fix for dropdown */
         .ios-scroll-fix {
             -webkit-overflow-scrolling: touch;
+            overflow: auto;
+        }
+        
+        /* Ensure iOS scrolling works properly */
+        .ios-scroll-fix::-webkit-scrollbar {
+            -webkit-appearance: none;
+            width: 6px;
+        }
+        
+        .ios-scroll-fix::-webkit-scrollbar-thumb {
+            border-radius: 3px;
+            background-color: rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
