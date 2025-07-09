@@ -7,11 +7,13 @@ class InsulinCalculator {
     }
 
     initializeElements() {
-        // Custom dropdown elements
+        // Modal elements
         this.penSelectButton = document.getElementById('penSelectButton');
         this.penSelectLabel = document.getElementById('penSelectLabel');
         this.penSelectChevron = document.getElementById('penSelectChevron');
-        this.penSelectDropdown = null; // Will be created dynamically
+        this.penSelectorModal = document.getElementById('penSelectorModal');
+        this.penSelectorContent = document.getElementById('penSelectorContent');
+        this.closePenModal = document.getElementById('closePenModal');
         this.penSelect = null; // Will be set to selected pen value for compatibility
         this.daySupplyInput = document.getElementById('daySupply');
         this.unitsPerDoseInput = document.getElementById('unitsPerDose');
@@ -139,7 +141,7 @@ class InsulinCalculator {
         };
         
         
-        this.populateDropdown();
+        this.populateModal();
     }
 
     bindEvents() {
@@ -155,71 +157,31 @@ class InsulinCalculator {
             }
         });
         
-        // Custom dropdown events
-        let touchHandled = false;
-        
-        this.penSelectButton.addEventListener('touchstart', (e) => {
-            // Prevent double-tap zoom on iOS
-            if (this.isIOS()) {
-                e.preventDefault();
-                touchHandled = true;
-            }
-        });
-        
-        this.penSelectButton.addEventListener('touchend', (e) => {
-            // Handle touch end for iOS
-            if (this.isIOS()) {
-                e.preventDefault();
-                this.toggleDropdown();
-                touchHandled = true;
-                // Reset flag after a delay to allow click to be prevented
-                setTimeout(() => { touchHandled = false; }, 300);
-            }
-        });
-        
-        this.penSelectButton.addEventListener('click', (e) => {
-            // Prevent click if touch was already handled
-            if (!touchHandled) {
-                this.toggleDropdown();
-            }
+        // Modal events
+        this.penSelectButton.addEventListener('click', () => {
+            this.openModal();
         });
         
         this.penSelectButton.addEventListener('keydown', (e) => this.handleButtonKeydown(e));
         
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (this.penSelectDropdown && 
-                !this.penSelectButton.contains(e.target) && 
-                !this.penSelectDropdown.contains(e.target)) {
-                this.closeDropdown();
-            }
+        // Close modal events
+        this.closePenModal.addEventListener('click', () => {
+            this.closeModal();
         });
         
-        // Close dropdown on escape key
+        // Close modal on escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.penSelectDropdown && 
-                !this.penSelectDropdown.classList.contains('hidden')) {
-                this.closeDropdown();
-                this.penSelectButton.focus();
+            if (e.key === 'Escape' && this.penSelectorModal && 
+                !this.penSelectorModal.classList.contains('hidden')) {
+                this.closeModal();
             }
         });
         
-        // Reposition dropdown on window resize and scroll
-        window.addEventListener('resize', () => {
-            if (this.penSelectDropdown && !this.penSelectDropdown.classList.contains('hidden')) {
-                this.positionDropdown();
+        // Close modal when clicking outside
+        this.penSelectorModal.addEventListener('click', (e) => {
+            if (e.target === this.penSelectorModal) {
+                this.closeModal();
             }
-        });
-        
-        window.addEventListener('scroll', () => {
-            if (this.penSelectDropdown && !this.penSelectDropdown.classList.contains('hidden')) {
-                this.positionDropdown();
-            }
-        });
-        
-        // Clean up dropdown on page unload
-        window.addEventListener('beforeunload', () => {
-            this.destroyDropdown();
         });
         
         // Priming loss toggle event
@@ -583,14 +545,14 @@ class InsulinCalculator {
         }
     }
 
-    async populateDropdown() {
+    async populateModal() {
         try {
             const response = await fetch('final_insulin_pens.json');
             const data = await response.json();
             this.insulinPens = data;
             
-            // Populate custom dropdown
-            this.populateCustomDropdown();
+            // Populate modal content
+            this.populateModalContent();
             
             // Set default selection to Lantus SoloStar
             this.selectPen('lantus-solostar');
@@ -599,78 +561,10 @@ class InsulinCalculator {
         }
     }
 
-    populateCustomDropdown() {
-        if (!this.insulinPens || !this.penSelectDropdown) return;
+    populateModalContent() {
+        if (!this.insulinPens || !this.penSelectorContent) return;
         
-        const dropdownContent = this.penSelectDropdown.querySelector('.py-1');
-        dropdownContent.innerHTML = '';
-        
-        // Add "None" option
-        const noneOption = document.createElement('button');
-        noneOption.type = 'button';
-        noneOption.className = 'w-full py-3 px-4 text-left text-base hover:bg-blue-50 focus:bg-blue-50 focus:outline-none min-h-[44px] flex items-center transition-colors duration-150 active:bg-blue-100';
-        noneOption.setAttribute('role', 'option');
-        noneOption.setAttribute('tabindex', '-1');
-        noneOption.setAttribute('aria-selected', !this.penSelect ? 'true' : 'false');
-        
-        // iOS-specific touch optimization
-        noneOption.style.WebkitTapHighlightColor = 'rgba(0,0,0,0)';
-        noneOption.style.WebkitTouchCallout = 'none';
-        noneOption.style.WebkitUserSelect = 'none';
-        
-        // Highlight if no pen selected
-        if (!this.penSelect) {
-            noneOption.className += ' bg-blue-100 text-blue-900';
-        }
-        noneOption.innerHTML = `
-            <div class="flex-1">
-                <div class="text-gray-500">Select an insulin pen...</div>
-            </div>
-        `;
-        let noneOptionTouchHandled = false;
-        
-        noneOption.addEventListener('touchstart', (e) => {
-            // Highlight option on touch
-            noneOption.classList.add('bg-blue-100');
-            if (this.isIOS()) {
-                e.preventDefault();
-                noneOptionTouchHandled = true;
-            }
-        });
-        
-        noneOption.addEventListener('touchend', (e) => {
-            // Remove highlight and handle selection
-            noneOption.classList.remove('bg-blue-100');
-            if (this.isIOS()) {
-                e.preventDefault();
-                this.selectPen('');
-                noneOptionTouchHandled = true;
-                // Reset flag after a delay
-                setTimeout(() => { noneOptionTouchHandled = false; }, 300);
-            }
-        });
-        
-        noneOption.addEventListener('touchcancel', (e) => {
-            // Remove highlight on touch cancel
-            noneOption.classList.remove('bg-blue-100');
-            noneOptionTouchHandled = false;
-        });
-        
-        noneOption.addEventListener('click', () => {
-            // Prevent click if touch was already handled
-            if (!noneOptionTouchHandled) {
-                this.selectPen('');
-            }
-        });
-        
-        noneOption.addEventListener('keydown', (e) => this.handleOptionKeydown(e, ''));
-        
-        dropdownContent.appendChild(noneOption);
-        
-        // Add separator
-        const separator = document.createElement('div');
-        separator.className = 'border-t border-gray-200 my-1';
-        dropdownContent.appendChild(separator);
+        this.penSelectorContent.innerHTML = '';
         
         // Add pen options by category
         const categories = ['basal', 'rapid', 'ultra-rapid'];
@@ -682,87 +576,67 @@ class InsulinCalculator {
         
         categories.forEach(category => {
             if (this.insulinPens[category] && this.insulinPens[category].length > 0) {
+                // Add category section
+                const categorySection = document.createElement('div');
+                categorySection.className = 'space-y-3';
+                
                 // Add category header
-                const categoryHeader = document.createElement('div');
-                categoryHeader.className = 'px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200';
+                const categoryHeader = document.createElement('h4');
+                categoryHeader.className = 'text-sm font-medium text-gray-800 mb-3';
                 categoryHeader.textContent = categoryLabels[category];
-                dropdownContent.appendChild(categoryHeader);
+                categorySection.appendChild(categoryHeader);
+                
+                // Add pen grid
+                const penGrid = document.createElement('div');
+                penGrid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-3';
                 
                 // Add pen options
                 this.insulinPens[category].forEach(pen => {
-                    // Only show $35 indicator for Sanofi products with GoodRx pricing
                     const hasGoodRxDiscount = this.penDiscountInfo[pen.value] && 
                                              this.penDiscountInfo[pen.value].goodrx;
                     
-                    const option = document.createElement('button');
-                    option.type = 'button';
-                    option.className = 'w-full py-3 px-4 text-left text-base hover:bg-blue-50 focus:bg-blue-50 focus:outline-none min-h-[44px] flex items-center transition-colors duration-150 active:bg-blue-100';
-                    option.setAttribute('role', 'option');
-                    option.setAttribute('tabindex', '-1');
-                    option.setAttribute('aria-selected', this.penSelect === pen.value ? 'true' : 'false');
+                    const penCard = document.createElement('button');
+                    penCard.type = 'button';
+                    penCard.className = 'rounded-lg shadow px-4 py-3 hover:ring ring-blue-300 transition text-left bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500';
+                    penCard.setAttribute('data-pen-value', pen.value);
                     
-                    // iOS-specific touch optimization
-                    option.style.WebkitTapHighlightColor = 'rgba(0,0,0,0)';
-                    option.style.WebkitTouchCallout = 'none';
-                    option.style.WebkitUserSelect = 'none';
-                    
-                    // Highlight selected option
+                    // Highlight selected pen
                     if (this.penSelect === pen.value) {
-                        option.className += ' bg-blue-100 text-blue-900';
+                        penCard.className += ' ring-2 ring-blue-500 bg-blue-50';
                     }
-                    option.innerHTML = `
-                        <div class="flex-1">
-                            <div class="flex items-center">
-                                <span class="mr-2">💉</span>
-                                <span class="font-medium">${hasGoodRxDiscount ? '💰 ' : ''}${pen.brand}</span>
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1">
-                                ${pen.generic} • ${pen.concentration} units/mL • ${pen.volume} mL
-                                ${hasGoodRxDiscount ? ' • $35/month' : ''}
+                    
+                    penCard.innerHTML = `
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 text-lg">💉</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center space-x-2">
+                                    ${hasGoodRxDiscount ? '<div class="text-lg">💰</div>' : ''}
+                                    <div class="font-medium text-gray-900 truncate">${pen.brand}</div>
+                                </div>
+                                <div class="text-sm text-gray-600 mt-1">
+                                    <div>${pen.generic}</div>
+                                    <div class="flex items-center space-x-2 text-xs text-gray-500 mt-1">
+                                        <span>${pen.concentration} units/mL</span>
+                                        <span>•</span>
+                                        <span>${pen.volume} mL</span>
+                                        ${hasGoodRxDiscount ? '<span>• $35/month</span>' : ''}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     `;
                     
-                    let optionTouchHandled = false;
-                    
-                    option.addEventListener('touchstart', (e) => {
-                        // Highlight option on touch
-                        option.classList.add('bg-blue-100');
-                        if (this.isIOS()) {
-                            e.preventDefault();
-                            optionTouchHandled = true;
-                        }
+                    penCard.addEventListener('click', () => {
+                        this.selectPen(pen.value);
                     });
                     
-                    option.addEventListener('touchend', (e) => {
-                        // Remove highlight and handle selection
-                        option.classList.remove('bg-blue-100');
-                        if (this.isIOS()) {
-                            e.preventDefault();
-                            this.selectPen(pen.value);
-                            optionTouchHandled = true;
-                            // Reset flag after a delay
-                            setTimeout(() => { optionTouchHandled = false; }, 300);
-                        }
-                    });
+                    penCard.addEventListener('keydown', (e) => this.handleCardKeydown(e, pen.value));
                     
-                    option.addEventListener('touchcancel', (e) => {
-                        // Remove highlight on touch cancel
-                        option.classList.remove('bg-blue-100');
-                        optionTouchHandled = false;
-                    });
-                    
-                    option.addEventListener('click', () => {
-                        // Prevent click if touch was already handled
-                        if (!optionTouchHandled) {
-                            this.selectPen(pen.value);
-                        }
-                    });
-                    
-                    option.addEventListener('keydown', (e) => this.handleOptionKeydown(e, pen.value));
-                    
-                    dropdownContent.appendChild(option);
+                    penGrid.appendChild(penCard);
                 });
+                
+                categorySection.appendChild(penGrid);
+                this.penSelectorContent.appendChild(categorySection);
             }
         });
     }
@@ -1408,198 +1282,24 @@ class InsulinCalculator {
         this.inlineDiscountLinks.classList.remove('hidden');
     }
 
-    // Custom dropdown methods
-    toggleDropdown() {
-        if (this.penSelectDropdown && !this.penSelectDropdown.classList.contains('hidden')) {
-            this.closeDropdown();
-        } else {
-            this.openDropdown();
-        }
-    }
-
-    createDropdown() {
-        // Create dropdown element
-        this.penSelectDropdown = document.createElement('div');
-        this.penSelectDropdown.id = 'penSelectDropdown';
-        this.penSelectDropdown.className = 'ios-scroll-fix fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[70vh] overflow-y-auto hidden';
-        
-        // iOS Safari specific fixes - avoid overriding overflow styles
-        this.penSelectDropdown.style.position = 'fixed';
-        this.penSelectDropdown.style.zIndex = '9999';
-        this.penSelectDropdown.style.overflowX = 'hidden';
-        this.penSelectDropdown.style.minWidth = '200px';
-        this.penSelectDropdown.style.transform = 'translateZ(0)'; // Force hardware acceleration
-        this.penSelectDropdown.style.WebkitOverflowScrolling = 'touch'; // Ensure iOS momentum scrolling
-        
-        // Desktop fallback height - only set if not mobile
-        if (window.innerWidth > 768 && !this.isMobile()) {
-            this.penSelectDropdown.style.maxHeight = '300px';
-        }
-        
-        // Accessibility attributes
-        this.penSelectDropdown.setAttribute('role', 'listbox');
-        this.penSelectDropdown.setAttribute('aria-label', 'Insulin pen options');
-        
-        // Create content container
-        const content = document.createElement('div');
-        content.className = 'py-1';
-        this.penSelectDropdown.appendChild(content);
-        
-        // Append to body to avoid any container clipping
-        document.body.appendChild(this.penSelectDropdown);
-        
-        return this.penSelectDropdown;
-    }
-
-    positionDropdown() {
-        if (!this.penSelectDropdown) return;
-        
-        const buttonRect = this.penSelectButton.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
-        
-        // Get actual viewport dimensions (important for iOS)
-        const actualViewportHeight = Math.max(document.documentElement.clientHeight, viewportHeight);
-        const actualViewportWidth = Math.max(document.documentElement.clientWidth, viewportWidth);
-        
-        const dropdownMaxHeight = actualViewportHeight * 0.7; // 70vh
-        const buttonBottom = buttonRect.bottom;
-        const buttonTop = buttonRect.top;
-        const spaceBelow = actualViewportHeight - buttonBottom;
-        const spaceAbove = buttonTop;
-        
-        // Calculate position - use fixed positioning relative to viewport
-        let top = buttonBottom + 4; // 4px gap below button
-        let left = buttonRect.left;
-        const width = Math.max(buttonRect.width, 200); // Ensure minimum width
-        
-        // Determine if we should position above or below
-        const shouldPositionAbove = spaceBelow < Math.min(dropdownMaxHeight, 200) && spaceAbove > spaceBelow;
-        
-        if (shouldPositionAbove) {
-            // Position above the button
-            const availableHeight = Math.min(dropdownMaxHeight, spaceAbove - 4);
-            top = buttonTop - availableHeight - 4;
-            // Only set height for desktop or when significantly constrained
-            if (!this.isMobile() && availableHeight < dropdownMaxHeight * 0.8) {
-                this.penSelectDropdown.style.maxHeight = `${availableHeight}px`;
-            }
-        } else {
-            // Position below the button
-            const availableHeight = Math.min(dropdownMaxHeight, spaceBelow - 4);
-            // Only set height for desktop or when significantly constrained
-            if (!this.isMobile() && availableHeight < dropdownMaxHeight * 0.8) {
-                this.penSelectDropdown.style.maxHeight = `${availableHeight}px`;
-            }
-        }
-        
-        // Ensure dropdown doesn't go off screen horizontally
-        const margin = 16; // 16px margin from edges
-        const maxLeft = actualViewportWidth - width - margin;
-        left = Math.max(margin, Math.min(left, maxLeft));
-        
-        // Apply positioning with fixed positioning (no scroll offset needed)
-        this.penSelectDropdown.style.top = `${top}px`;
-        this.penSelectDropdown.style.left = `${left}px`;
-        this.penSelectDropdown.style.width = `${width}px`;
-        
-        // iOS Safari specific positioning fixes
-        this.penSelectDropdown.style.position = 'fixed';
-        this.penSelectDropdown.style.willChange = 'transform';
-        
-        // Add smooth animation
-        this.penSelectDropdown.style.transition = 'opacity 0.15s ease-out, transform 0.15s ease-out';
-        this.penSelectDropdown.style.transformOrigin = shouldPositionAbove ? 'bottom' : 'top';
-    }
-
-    openDropdown() {
-        // Create dropdown if it doesn't exist
-        if (!this.penSelectDropdown) {
-            this.createDropdown();
-            this.populateCustomDropdown();
-        }
-        
-        // Reset max-height for iOS scrolling before positioning
-        if (this.isMobile()) {
-            this.penSelectDropdown.style.maxHeight = '';
-        }
-        
-        // Position and show dropdown
-        this.positionDropdown();
-        
-        // Animate dropdown appearance
-        this.penSelectDropdown.style.opacity = '0';
-        this.penSelectDropdown.style.transform = 'translateY(-4px) translateZ(0)';
-        this.penSelectDropdown.classList.remove('hidden');
-        
-        // Trigger animation
-        requestAnimationFrame(() => {
-            this.penSelectDropdown.style.opacity = '1';
-            this.penSelectDropdown.style.transform = 'translateY(0) translateZ(0)';
-        });
-        
+    // Modal methods
+    openModal() {
+        this.penSelectorModal.classList.remove('hidden');
         this.penSelectButton.setAttribute('aria-expanded', 'true');
-        this.penSelectChevron.style.transform = 'rotate(180deg)';
+        document.body.style.overflow = 'hidden';
         
-        // Focus management for accessibility
-        if (!this.isMobile()) {
-            // Only focus on desktop to avoid iOS keyboard issues
-            const firstOption = this.penSelectDropdown.querySelector('[role="option"]');
-            if (firstOption) {
-                firstOption.focus();
-            }
-        }
-        
-        // iOS Safari specific fixes
-        if (this.isMobile()) {
-            // Prevent body scroll on mobile when dropdown is open
-            document.body.style.overflow = 'hidden';
-            document.body.style.position = 'fixed';
-            document.body.style.width = '100%';
-            
-            // Prevent zoom on iOS
-            const viewport = document.querySelector('meta[name="viewport"]');
-            if (viewport) {
-                this.originalViewportContent = viewport.getAttribute('content');
-                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
-            }
+        // Focus first pen card for accessibility
+        const firstPenCard = this.penSelectorContent.querySelector('button[data-pen-value]');
+        if (firstPenCard && !this.isMobile()) {
+            firstPenCard.focus();
         }
     }
 
-    closeDropdown() {
-        if (this.penSelectDropdown) {
-            // Animate dropdown disappearance
-            this.penSelectDropdown.style.opacity = '0';
-            this.penSelectDropdown.style.transform = 'translateY(-4px) translateZ(0)';
-            
-            setTimeout(() => {
-                this.penSelectDropdown.classList.add('hidden');
-            }, 150);
-        }
+    closeModal() {
+        this.penSelectorModal.classList.add('hidden');
         this.penSelectButton.setAttribute('aria-expanded', 'false');
-        this.penSelectChevron.style.transform = 'rotate(0deg)';
-        
-        // Restore body scroll and viewport on mobile
-        if (this.isMobile()) {
-            document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
-            
-            // Restore original viewport settings
-            if (this.originalViewportContent) {
-                const viewport = document.querySelector('meta[name="viewport"]');
-                if (viewport) {
-                    viewport.setAttribute('content', this.originalViewportContent);
-                }
-            }
-        }
-    }
-
-    destroyDropdown() {
-        if (this.penSelectDropdown && this.penSelectDropdown.parentNode) {
-            this.penSelectDropdown.parentNode.removeChild(this.penSelectDropdown);
-            this.penSelectDropdown = null;
-        }
+        document.body.style.overflow = '';
+        this.penSelectButton.focus();
     }
 
     // Mobile detection helper with iOS-specific detection
@@ -1616,16 +1316,16 @@ class InsulinCalculator {
     handleButtonKeydown(e) {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
             e.preventDefault();
-            this.openDropdown();
+            this.openModal();
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            this.openDropdown();
+            this.openModal();
         }
     }
 
-    handleOptionKeydown(e, penValue) {
-        const options = Array.from(this.penSelectDropdown.querySelectorAll('[role="option"]'));
-        const currentIndex = options.indexOf(e.target);
+    handleCardKeydown(e, penValue) {
+        const cards = Array.from(this.penSelectorContent.querySelectorAll('button[data-pen-value]'));
+        const currentIndex = cards.indexOf(e.target);
 
         switch (e.key) {
             case 'Enter':
@@ -1635,18 +1335,17 @@ class InsulinCalculator {
                 break;
             case 'ArrowDown':
                 e.preventDefault();
-                const nextIndex = (currentIndex + 1) % options.length;
-                options[nextIndex].focus();
+                const nextIndex = (currentIndex + 1) % cards.length;
+                cards[nextIndex].focus();
                 break;
             case 'ArrowUp':
                 e.preventDefault();
-                const prevIndex = (currentIndex - 1 + options.length) % options.length;
-                options[prevIndex].focus();
+                const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
+                cards[prevIndex].focus();
                 break;
             case 'Escape':
                 e.preventDefault();
-                this.closeDropdown();
-                this.penSelectButton.focus();
+                this.closeModal();
                 break;
         }
     }
@@ -1683,8 +1382,23 @@ class InsulinCalculator {
             this.hideExpirationWarning();
         }
         
-        this.closeDropdown();
-        this.penSelectButton.focus();
+        // Update visual selection in modal
+        this.updateModalSelection();
+        
+        this.closeModal();
+    }
+
+    updateModalSelection() {
+        // Update visual selection in modal
+        const allCards = this.penSelectorContent.querySelectorAll('button[data-pen-value]');
+        allCards.forEach(card => {
+            const cardValue = card.getAttribute('data-pen-value');
+            if (cardValue === this.penSelect) {
+                card.className = card.className.replace('bg-white border-gray-200', 'ring-2 ring-blue-500 bg-blue-50');
+            } else {
+                card.className = card.className.replace('ring-2 ring-blue-500 bg-blue-50', 'bg-white border-gray-200');
+            }
+        });
     }
 
 }
