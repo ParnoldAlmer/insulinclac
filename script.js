@@ -600,8 +600,9 @@ class InsulinCalculator {
                     
                     const penCard = document.createElement('button');
                     penCard.type = 'button';
-                    penCard.className = 'rounded-lg shadow px-4 py-3 hover:ring ring-blue-300 transition text-left bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500';
+                    penCard.className = 'pen-card rounded-lg shadow px-4 py-3 hover:ring hover:ring-blue-300 transition text-left bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500';
                     penCard.setAttribute('data-pen-value', pen.value);
+                    penCard.setAttribute('data-pen-id', pen.value); // Add data-pen-id for consistency
                     
                     // Selection state will be set by updateModalSelection() when modal opens
                     
@@ -651,7 +652,7 @@ class InsulinCalculator {
         this.updateModalSelection();
         
         // Focus first pen card for accessibility
-        const firstPenCard = this.penSelectorContent.querySelector('button[data-pen-value]');
+        const firstPenCard = this.penSelectorContent.querySelector('.pen-card');
         if (firstPenCard && !this.isMobile()) {
             firstPenCard.focus();
         }
@@ -1327,7 +1328,7 @@ class InsulinCalculator {
     }
 
     handleCardKeydown(e, penValue) {
-        const cards = Array.from(this.penSelectorContent.querySelectorAll('button[data-pen-value]'));
+        const cards = Array.from(this.penSelectorContent.querySelectorAll('.pen-card'));
         const currentIndex = cards.indexOf(e.target);
 
         switch (e.key) {
@@ -1395,19 +1396,19 @@ class InsulinCalculator {
     }
 
     updateModalSelection() {
-        // Update visual selection in modal
-        const allCards = this.penSelectorContent.querySelectorAll('button[data-pen-value]');
+        // Update visual selection in modal - loop through all pen cards
+        const allCards = this.penSelectorContent.querySelectorAll('.pen-card');
         allCards.forEach(card => {
-            const cardValue = card.getAttribute('data-pen-value');
+            const cardPenId = card.getAttribute('data-pen-id');
             
             // First, clear all selection styles from every card
-            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300');
             card.classList.add('bg-white', 'border-gray-200');
             
             // Then apply selection styles only to the selected card
-            if (cardValue === this.penSelect) {
+            if (cardPenId === this.penSelect) {
                 card.classList.remove('bg-white', 'border-gray-200');
-                card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+                card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-300');
             }
         });
     }
