@@ -1,11 +1,10 @@
-const CACHE_NAME = 'insulin-calculator-v3';
+const CACHE_NAME = 'insulin-calculator-v4';
 const urlsToCache = [
   '/',
   '/index.html',
   '/script.js',
   '/final_insulin_pens.json',
-  '/manifest.json',
-  'https://cdn.tailwindcss.com'
+  '/manifest.json'
 ];
 
 // Install event - cache resources
@@ -15,6 +14,9 @@ self.addEventListener('install', event => {
       .then(cache => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
+      })
+      .catch(error => {
+        console.error('Failed to cache resources:', error);
       })
   );
 });
@@ -52,17 +54,26 @@ self.addEventListener('fetch', event => {
             return response;
           }
 
-          // Clone the response as it can only be consumed once
-          const responseToCache = response.clone();
+          // Only cache same-origin requests to avoid CORS issues
+          if (event.request.url.startsWith(self.location.origin)) {
+            // Clone the response as it can only be consumed once
+            const responseToCache = response.clone();
 
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              })
+              .catch(error => {
+                console.error('Failed to cache request:', error);
+              });
+          }
 
           return response;
+        }).catch(error => {
+          console.error('Fetch failed:', error);
+          // Return a fallback response or just rethrow
+          throw error;
         });
-      }
-    )
+      })
   );
 });
