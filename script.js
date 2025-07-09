@@ -50,6 +50,10 @@ class InsulinCalculator {
         this.inlineDiscountLinks = document.getElementById('inlineDiscountLinks');
         this.inlineDiscountContent = document.getElementById('inlineDiscountContent');
         
+        // Clinical guidance elements
+        this.clinicalGuidance = document.getElementById('clinicalGuidance');
+        this.clinicalGuidanceText = document.getElementById('clinicalGuidanceText');
+        
         this.insulinPens = null;
         this.selectedPen = null;
         this.includeWastage = true;
@@ -288,8 +292,38 @@ class InsulinCalculator {
             totalML: Math.round(totalML * 100) / 100,
             pensToOrder,
             expirationWarning: expirationCheck.warning,
-            wastageIncluded: this.includeWastage
+            wastageIncluded: this.includeWastage,
+            dailyDose: values.unitsPerDose * values.doseFrequency // Add daily dose for clinical guidance
         };
+    }
+
+    displayClinicalGuidance(values, results) {
+        // Only show guidance for Lantus or Toujeo
+        if (!this.selectedPen || 
+            (this.selectedPen.value !== 'lantus-solostar' && this.selectedPen.value !== 'toujeo-solostar')) {
+            this.clinicalGuidance.classList.add('hidden');
+            return;
+        }
+
+        const dailyDose = results.dailyDose;
+        let guidanceText = '';
+
+        if (this.selectedPen.value === 'lantus-solostar') {
+            if (dailyDose >= 60) {
+                guidanceText = 'For patients requiring 60 units or more per day, consider switching to Toujeo (insulin glargine U-300) for easier injections (lower volume), and potentially smoother, longer-acting insulin coverage.';
+            } else {
+                guidanceText = 'Patients taking less than 60 units per day typically remain on Lantus, unless specific clinical issues (e.g., frequent hypoglycemia or inconsistent coverage) suggest otherwise.';
+            }
+        } else if (this.selectedPen.value === 'toujeo-solostar') {
+            guidanceText = 'Toujeo (insulin glargine U-300) may be preferred for patients needing higher daily doses (≥60 units), or when smoother, longer-acting basal coverage is desired.';
+        }
+
+        if (guidanceText) {
+            this.clinicalGuidanceText.textContent = guidanceText;
+            this.clinicalGuidance.classList.remove('hidden');
+        } else {
+            this.clinicalGuidance.classList.add('hidden');
+        }
     }
 
     generatePrescriptionNote(values, results) {
@@ -379,6 +413,9 @@ class InsulinCalculator {
         // Show discount links
         this.displayDiscountLinks(values, results);
         
+        // Show clinical guidance for Lantus/Toujeo
+        this.displayClinicalGuidance(values, results);
+        
         this.resultsDiv.classList.remove('hidden');
         this.errorDiv.classList.add('hidden');
     }
@@ -442,6 +479,7 @@ class InsulinCalculator {
         this.errorDiv.querySelector('p').textContent = errors.join('. ');
         this.errorDiv.classList.remove('hidden');
         this.resultsDiv.classList.add('hidden');
+        this.clinicalGuidance.classList.add('hidden');
     }
 
     calculate() {
@@ -451,6 +489,7 @@ class InsulinCalculator {
         if (!values.unitsPerDose || !values.concentration || !values.volumePerPen) {
             this.resultsDiv.classList.add('hidden');
             this.errorDiv.classList.add('hidden');
+            this.clinicalGuidance.classList.add('hidden');
             return;
         }
         
