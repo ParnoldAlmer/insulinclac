@@ -11,7 +11,7 @@ class InsulinCalculator {
         this.penSelectButton = document.getElementById('penSelectButton');
         this.penSelectLabel = document.getElementById('penSelectLabel');
         this.penSelectChevron = document.getElementById('penSelectChevron');
-        this.penSelectDropdown = document.getElementById('penSelectDropdown');
+        this.penSelectDropdown = null; // Will be created dynamically
         this.penSelect = null; // Will be set to selected pen value for compatibility
         this.daySupplyInput = document.getElementById('daySupply');
         this.unitsPerDoseInput = document.getElementById('unitsPerDose');
@@ -161,17 +161,32 @@ class InsulinCalculator {
         
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
-            if (!this.penSelectButton.contains(e.target) && !this.penSelectDropdown.contains(e.target)) {
+            if (this.penSelectDropdown && 
+                !this.penSelectButton.contains(e.target) && 
+                !this.penSelectDropdown.contains(e.target)) {
                 this.closeDropdown();
             }
         });
         
         // Close dropdown on escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !this.penSelectDropdown.classList.contains('hidden')) {
+            if (e.key === 'Escape' && this.penSelectDropdown && 
+                !this.penSelectDropdown.classList.contains('hidden')) {
                 this.closeDropdown();
                 this.penSelectButton.focus();
             }
+        });
+        
+        // Reposition dropdown on window resize
+        window.addEventListener('resize', () => {
+            if (this.penSelectDropdown && !this.penSelectDropdown.classList.contains('hidden')) {
+                this.positionDropdown();
+            }
+        });
+        
+        // Clean up dropdown on page unload
+        window.addEventListener('beforeunload', () => {
+            this.destroyDropdown();
         });
         
         // Priming loss toggle event
@@ -552,7 +567,7 @@ class InsulinCalculator {
     }
 
     populateCustomDropdown() {
-        if (!this.insulinPens) return;
+        if (!this.insulinPens || !this.penSelectDropdown) return;
         
         const dropdownContent = this.penSelectDropdown.querySelector('.py-1');
         dropdownContent.innerHTML = '';
@@ -1268,14 +1283,71 @@ class InsulinCalculator {
 
     // Custom dropdown methods
     toggleDropdown() {
-        if (this.penSelectDropdown.classList.contains('hidden')) {
-            this.openDropdown();
-        } else {
+        if (this.penSelectDropdown && !this.penSelectDropdown.classList.contains('hidden')) {
             this.closeDropdown();
+        } else {
+            this.openDropdown();
         }
     }
 
+    createDropdown() {
+        // Create dropdown element
+        this.penSelectDropdown = document.createElement('div');
+        this.penSelectDropdown.id = 'penSelectDropdown';
+        this.penSelectDropdown.className = 'fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg hidden';
+        this.penSelectDropdown.style.maxHeight = '70vh';
+        this.penSelectDropdown.style.overflowY = 'auto';
+        this.penSelectDropdown.setAttribute('role', 'listbox');
+        
+        // Create content container
+        const content = document.createElement('div');
+        content.className = 'py-1';
+        this.penSelectDropdown.appendChild(content);
+        
+        // Append to body
+        document.body.appendChild(this.penSelectDropdown);
+        
+        return this.penSelectDropdown;
+    }
+
+    positionDropdown() {
+        if (!this.penSelectDropdown) return;
+        
+        const buttonRect = this.penSelectButton.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const dropdownHeight = Math.min(viewportHeight * 0.7, 400); // Max 70vh or 400px
+        
+        // Calculate position
+        let top = buttonRect.bottom + window.scrollY + 4; // 4px gap
+        let left = buttonRect.left + window.scrollX;
+        const width = buttonRect.width;
+        
+        // Check if dropdown would go below viewport
+        if (buttonRect.bottom + dropdownHeight > viewportHeight) {
+            // Position above the button instead
+            top = buttonRect.top + window.scrollY - dropdownHeight - 4;
+        }
+        
+        // Ensure dropdown doesn't go off screen horizontally
+        const maxLeft = window.innerWidth - width - 16; // 16px margin
+        left = Math.max(16, Math.min(left, maxLeft));
+        
+        // Apply positioning
+        this.penSelectDropdown.style.top = `${top}px`;
+        this.penSelectDropdown.style.left = `${left}px`;
+        this.penSelectDropdown.style.width = `${width}px`;
+        this.penSelectDropdown.style.maxHeight = `${dropdownHeight}px`;
+    }
+
     openDropdown() {
+        // Create dropdown if it doesn't exist
+        if (!this.penSelectDropdown) {
+            this.createDropdown();
+            this.populateCustomDropdown();
+        }
+        
+        // Position and show dropdown
+        this.positionDropdown();
         this.penSelectDropdown.classList.remove('hidden');
         this.penSelectButton.setAttribute('aria-expanded', 'true');
         this.penSelectChevron.style.transform = 'rotate(180deg)';
@@ -1288,9 +1360,18 @@ class InsulinCalculator {
     }
 
     closeDropdown() {
-        this.penSelectDropdown.classList.add('hidden');
+        if (this.penSelectDropdown) {
+            this.penSelectDropdown.classList.add('hidden');
+        }
         this.penSelectButton.setAttribute('aria-expanded', 'false');
         this.penSelectChevron.style.transform = 'rotate(0deg)';
+    }
+
+    destroyDropdown() {
+        if (this.penSelectDropdown && this.penSelectDropdown.parentNode) {
+            this.penSelectDropdown.parentNode.removeChild(this.penSelectDropdown);
+            this.penSelectDropdown = null;
+        }
     }
 
     handleButtonKeydown(e) {
