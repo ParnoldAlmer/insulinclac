@@ -59,19 +59,19 @@ class InsulinCalculator {
         this.penDiscountInfo = {
             // Sanofi pens - GoodRx $35/month + Amazon
             'lantus-solostar': {
-                goodrx: { url: 'https://www.goodrx.com/lantus?label_override=lantus&form=carton&dosage=5-solostar-pens-of-3ml&quantity=1&drugId=37030', text: 'GoodRx $35/month Coupon' },
+                goodrx: { url: 'https://www.goodrx.com/lantus?label_override=lantus&form=carton&dosage=5-solostar-pens-of-3ml&quantity=1&drugId=37030', text: 'GoodRx $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'toujeo-solostar': {
-                goodrx: { url: 'https://www.goodrx.com/toujeo', text: 'GoodRx $35/month Coupon' },
+                goodrx: { url: 'https://www.goodrx.com/toujeo', text: 'GoodRx $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'admelog-solostar': {
-                goodrx: { url: 'https://www.goodrx.com/admelog', text: 'GoodRx $35/month Coupon' },
+                goodrx: { url: 'https://www.goodrx.com/admelog', text: 'GoodRx $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'apidra-solostar': {
-                goodrx: { url: 'https://www.goodrx.com/apidra', text: 'GoodRx $35/month Coupon' },
+                goodrx: { url: 'https://www.goodrx.com/apidra', text: 'GoodRx $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             
