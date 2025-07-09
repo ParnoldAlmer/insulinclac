@@ -600,10 +600,7 @@ class InsulinCalculator {
                     penCard.className = 'rounded-lg shadow px-4 py-3 hover:ring ring-blue-300 transition text-left bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500';
                     penCard.setAttribute('data-pen-value', pen.value);
                     
-                    // Highlight selected pen
-                    if (this.penSelect === pen.value) {
-                        penCard.className += ' ring-2 ring-blue-500 bg-blue-50';
-                    }
+                    // Selection state will be set by updateModalSelection() when modal opens
                     
                     penCard.innerHTML = `
                         <div class="flex items-start space-x-3">
@@ -646,6 +643,9 @@ class InsulinCalculator {
         this.penSelectorModal.classList.remove('hidden');
         this.penSelectButton.setAttribute('aria-expanded', 'true');
         document.body.style.overflow = 'hidden';
+        
+        // Update visual selection to match current state
+        this.updateModalSelection();
         
         // Focus first pen card for accessibility
         const firstPenCard = this.penSelectorContent.querySelector('button[data-pen-value]');
@@ -1397,9 +1397,13 @@ class InsulinCalculator {
         allCards.forEach(card => {
             const cardValue = card.getAttribute('data-pen-value');
             if (cardValue === this.penSelect) {
-                card.className = card.className.replace('bg-white border-gray-200', 'ring-2 ring-blue-500 bg-blue-50');
+                // Selected card styling
+                card.classList.remove('bg-white', 'border-gray-200');
+                card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
             } else {
-                card.className = card.className.replace('ring-2 ring-blue-500 bg-blue-50', 'bg-white border-gray-200');
+                // Unselected card styling
+                card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+                card.classList.add('bg-white', 'border-gray-200');
             }
         });
     }
