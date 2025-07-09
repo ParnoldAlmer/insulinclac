@@ -25,8 +25,8 @@ class InsulinCalculator {
         
         this.disclaimerBtn = document.getElementById('disclaimerBtn');
         this.disclaimerModal = document.getElementById('disclaimerModal');
-        this.closeModal = document.getElementById('closeModal');
-        this.closeModalBtn = document.getElementById('closeModalBtn');
+        this.closeDisclaimerModal = document.getElementById('closeModal');
+        this.closeDisclaimerModalBtn = document.getElementById('closeModalBtn');
         
         this.resultsDiv = document.getElementById('results');
         this.errorDiv = document.getElementById('errorMessage');
@@ -149,8 +149,8 @@ class InsulinCalculator {
         this.copyBtn.addEventListener('click', () => this.copyPrescription());
         
         this.disclaimerBtn.addEventListener('click', () => this.showDisclaimer());
-        this.closeModal.addEventListener('click', () => this.hideDisclaimer());
-        this.closeModalBtn.addEventListener('click', () => this.hideDisclaimer());
+        this.closeDisclaimerModal.addEventListener('click', () => this.hideDisclaimer());
+        this.closeDisclaimerModalBtn.addEventListener('click', () => this.hideDisclaimer());
         this.disclaimerModal.addEventListener('click', (e) => {
             if (e.target === this.disclaimerModal) {
                 this.hideDisclaimer();
@@ -1385,7 +1385,10 @@ class InsulinCalculator {
         // Update visual selection in modal
         this.updateModalSelection();
         
-        this.closeModal();
+        // Close modal after selection (only if modal is open)
+        if (this.penSelectorModal && !this.penSelectorModal.classList.contains('hidden')) {
+            this.closeModal();
+        }
     }
 
     updateModalSelection() {
