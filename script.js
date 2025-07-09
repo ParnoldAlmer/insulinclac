@@ -324,11 +324,15 @@ class InsulinCalculator {
         const dailyDose = results.dailyDose;
         let guidanceText = '';
 
+        // Don't show guidance for patients under 60 units
+        if (dailyDose < 60) {
+            this.clinicalGuidance.classList.add('hidden');
+            return;
+        }
+
         if (this.selectedPen.value === 'lantus-solostar') {
             if (dailyDose >= 60) {
                 guidanceText = 'For patients requiring 60 units or more per day, consider switching to Toujeo (insulin glargine U-300) for easier injections (lower volume), and potentially smoother, longer-acting insulin coverage.';
-            } else {
-                guidanceText = 'Patients taking less than 60 units per day typically remain on Lantus, unless specific clinical issues (e.g., frequent hypoglycemia or inconsistent coverage) suggest otherwise.';
             }
         } else if (this.selectedPen.value === 'toujeo-solostar') {
             guidanceText = 'Toujeo (insulin glargine U-300) may be preferred for patients needing higher daily doses (≥60 units), or when smoother, longer-acting basal coverage is desired.';
