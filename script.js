@@ -101,25 +101,25 @@ class InsulinCalculator {
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             
-            // Novo Nordisk pens - NovoCare + Amazon
+            // Novo Nordisk pens - $35/month program + Amazon
             'novolog-flexpen': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'Novo Nordisk $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'fiasp-flextouch': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'Novo Nordisk $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'levemir-flextouch': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'Novo Nordisk $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'tresiba-flextouch': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'Novo Nordisk $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             },
             'tresiba-flextouch-u200': {
-                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'NovoCare Copay Card' },
+                novocare: { url: 'https://www.novocare.com/diabetes/help-with-costs/help-with-insulin-costs.html', text: 'Novo Nordisk $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
             }
         };
@@ -604,8 +604,8 @@ class InsulinCalculator {
                 
                 // Add pen options
                 this.insulinPens[category].forEach(pen => {
-                    const hasGoodRxDiscount = this.penDiscountInfo[pen.value] && 
-                                             this.penDiscountInfo[pen.value].goodrx;
+                    const has35MonthDiscount = this.penDiscountInfo[pen.value] && 
+                                             (this.penDiscountInfo[pen.value].goodrx || this.penDiscountInfo[pen.value].novocare);
                     
                     const penCard = document.createElement('button');
                     penCard.type = 'button';
@@ -620,7 +620,7 @@ class InsulinCalculator {
                             <div class="flex-shrink-0 text-lg">💉</div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center space-x-2">
-                                    ${hasGoodRxDiscount ? '<div class="text-lg">💰</div>' : ''}
+                                    ${has35MonthDiscount ? '<div class="text-lg">💰</div>' : ''}
                                     <div class="font-medium text-gray-900 truncate">${pen.brand}</div>
                                 </div>
                                 <div class="text-sm text-gray-600 mt-1">
@@ -629,7 +629,7 @@ class InsulinCalculator {
                                         <span>${pen.concentration} units/mL</span>
                                         <span>•</span>
                                         <span>${pen.volume} mL</span>
-                                        ${hasGoodRxDiscount ? '<span>• $35/month</span>' : ''}
+                                        ${has35MonthDiscount ? '<span>• $35/month</span>' : ''}
                                     </div>
                                 </div>
                             </div>
@@ -1372,11 +1372,11 @@ class InsulinCalculator {
         this.selectedPen = this.findPenByValue(penValue);
         
         if (penValue && this.selectedPen) {
-            // Update button label - only show 💰 for Sanofi products with GoodRx pricing
-            const hasGoodRxDiscount = this.penDiscountInfo[penValue] && 
-                                     this.penDiscountInfo[penValue].goodrx;
+            // Update button label - show 💰 for pens with $35/month pricing
+            const has35MonthDiscount = this.penDiscountInfo[penValue] && 
+                                     (this.penDiscountInfo[penValue].goodrx || this.penDiscountInfo[penValue].novocare);
             
-            this.penSelectLabel.textContent = `${hasGoodRxDiscount ? '💰 ' : ''}${this.selectedPen.brand} (${this.selectedPen.generic})`;
+            this.penSelectLabel.textContent = `${has35MonthDiscount ? '💰 ' : ''}${this.selectedPen.brand} (${this.selectedPen.generic})`;
             this.penSelectLabel.classList.remove('text-gray-500');
             this.penSelectLabel.classList.add('text-gray-900');
             
