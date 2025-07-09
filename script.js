@@ -612,7 +612,7 @@ class InsulinCalculator {
                             </div>
                             <div class="text-xs text-gray-500 mt-1">
                                 ${pen.generic} • ${pen.concentration} units/mL • ${pen.volume} mL
-                                ${hasGoodRxDiscount ? ' • $35/month available' : ''}
+                                ${hasGoodRxDiscount ? ' • $35/month' : ''}
                             </div>
                         </div>
                     `;
