@@ -7,7 +7,12 @@ class InsulinCalculator {
     }
 
     initializeElements() {
-        this.penSelect = document.getElementById('penSelect');
+        // Custom dropdown elements
+        this.penSelectButton = document.getElementById('penSelectButton');
+        this.penSelectLabel = document.getElementById('penSelectLabel');
+        this.penSelectChevron = document.getElementById('penSelectChevron');
+        this.penSelectDropdown = document.getElementById('penSelectDropdown');
+        this.penSelect = null; // Will be set to selected pen value for compatibility
         this.daySupplyInput = document.getElementById('daySupply');
         this.unitsPerDoseInput = document.getElementById('unitsPerDose');
         this.doseFrequencyInput = document.getElementById('doseFrequency');
@@ -150,22 +155,22 @@ class InsulinCalculator {
             }
         });
         
-        this.penSelect.addEventListener('change', (e) => {
-            const selectedValue = e.target.value;
-            if (selectedValue && this.insulinPens) {
-                const selectedPen = this.findPenByValue(selectedValue);
-                if (selectedPen) {
-                    const penType = this.findPenType(selectedValue);
-                    this.setPenValues(selectedPen.concentration, selectedPen.volume, penType);
-                    this.toggleWeightBasedDosing(penType);
-                    this.showPricingInfo(selectedValue, selectedPen);
-                    this.checkExpirationWarning(selectedValue);
-                    this.checkMaxDoseLimit(); // Check max dose when pen selection changes
-                }
-            } else {
-                this.toggleWeightBasedDosing(null);
-                this.showPricingInfo(null, null);
-                this.hideExpirationWarning();
+        // Custom dropdown events
+        this.penSelectButton.addEventListener('click', () => this.toggleDropdown());
+        this.penSelectButton.addEventListener('keydown', (e) => this.handleButtonKeydown(e));
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!this.penSelectButton.contains(e.target) && !this.penSelectDropdown.contains(e.target)) {
+                this.closeDropdown();
+            }
+        });
+        
+        // Close dropdown on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !this.penSelectDropdown.classList.contains('hidden')) {
+                this.closeDropdown();
+                this.penSelectButton.focus();
             }
         });
         
@@ -536,49 +541,89 @@ class InsulinCalculator {
             const data = await response.json();
             this.insulinPens = data;
             
-            const groups = {
-                'basal': 'Basal Insulins',
-                'rapid': 'Rapid-Acting Insulins',
-                'ultra-rapid': 'Ultra-Rapid Acting Insulins'
-            };
-            
-            Object.entries(groups).forEach(([key, label]) => {
-                if (data[key] && data[key].length > 0) {
-                    const optgroup = document.createElement('optgroup');
-                    optgroup.label = label;
-                    
-                    data[key].forEach(pen => {
-                        const option = document.createElement('option');
-                        option.value = pen.value;
-                        
-                        // Add $35 tag for pens with GoodRx pricing
-                        const hasGoodRxPricing = ['lantus-solostar', 'toujeo-solostar', 'admelog-solostar', 'apidra-solostar'].includes(pen.value);
-                        const priceTag = hasGoodRxPricing ? ' $35' : '';
-                        
-                        // Add discount indicator only for pens with discount options
-                        const hasDiscountOptions = this.penDiscountInfo[pen.value];
-                        const discountTag = hasDiscountOptions ? ' 💰' : '';
-                        
-                        option.textContent = `${pen.brand} - ${pen.generic} (${pen.concentration} U/mL, ${pen.volume} mL)${priceTag}${discountTag}`;
-                        optgroup.appendChild(option);
-                    });
-                    
-                    this.penSelect.appendChild(optgroup);
-                }
-            });
+            // Populate custom dropdown
+            this.populateCustomDropdown();
             
             // Set default selection to Lantus SoloStar
-            this.penSelect.value = 'lantus-solostar';
-            const defaultPen = this.findPenByValue('lantus-solostar');
-            if (defaultPen) {
-                const penType = this.findPenType('lantus-solostar');
-                this.setPenValues(defaultPen.concentration, defaultPen.volume, penType);
-                this.toggleWeightBasedDosing(penType);
-                this.showPricingInfo('lantus-solostar', defaultPen);
-            }
+            this.selectPen('lantus-solostar');
         } catch (error) {
             console.error('Error loading insulin pens:', error);
         }
+    }
+
+    populateCustomDropdown() {
+        if (!this.insulinPens) return;
+        
+        const dropdownContent = this.penSelectDropdown.querySelector('.py-1');
+        dropdownContent.innerHTML = '';
+        
+        // Add "None" option
+        const noneOption = document.createElement('button');
+        noneOption.type = 'button';
+        noneOption.className = 'w-full px-4 py-2 text-left text-base hover:bg-blue-50 focus:bg-blue-50 focus:outline-none min-h-[44px] flex items-center';
+        noneOption.setAttribute('role', 'option');
+        noneOption.setAttribute('tabindex', '-1');
+        noneOption.innerHTML = `
+            <div class="flex-1">
+                <div class="text-gray-500">Select an insulin pen...</div>
+            </div>
+        `;
+        noneOption.addEventListener('click', () => this.selectPen(''));
+        noneOption.addEventListener('keydown', (e) => this.handleOptionKeydown(e, ''));
+        dropdownContent.appendChild(noneOption);
+        
+        // Add separator
+        const separator = document.createElement('div');
+        separator.className = 'border-t border-gray-200 my-1';
+        dropdownContent.appendChild(separator);
+        
+        // Add pen options by category
+        const categories = ['basal', 'rapid', 'ultra-rapid'];
+        const categoryLabels = {
+            'basal': 'Long-Acting (Basal)',
+            'rapid': 'Rapid-Acting (Mealtime)',
+            'ultra-rapid': 'Ultra-Rapid-Acting'
+        };
+        
+        categories.forEach(category => {
+            if (this.insulinPens[category] && this.insulinPens[category].length > 0) {
+                // Add category header
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200';
+                categoryHeader.textContent = categoryLabels[category];
+                dropdownContent.appendChild(categoryHeader);
+                
+                // Add pen options
+                this.insulinPens[category].forEach(pen => {
+                    const hasDiscount = this.penDiscountInfo[pen.value] && 
+                                       (this.penDiscountInfo[pen.value].goodrx || 
+                                        this.penDiscountInfo[pen.value].lilly || 
+                                        this.penDiscountInfo[pen.value].novocare);
+                    
+                    const option = document.createElement('button');
+                    option.type = 'button';
+                    option.className = 'w-full px-4 py-2 text-left text-base hover:bg-blue-50 focus:bg-blue-50 focus:outline-none min-h-[44px] flex items-center';
+                    option.setAttribute('role', 'option');
+                    option.setAttribute('tabindex', '-1');
+                    option.innerHTML = `
+                        <div class="flex-1">
+                            <div class="flex items-center">
+                                <span class="mr-2">💉</span>
+                                <span class="font-medium">${hasDiscount ? '💰 ' : ''}${pen.brand}</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                ${pen.concentration} units/mL • ${pen.volume} mL
+                                ${hasDiscount ? ' • $35/month available' : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    option.addEventListener('click', () => this.selectPen(pen.value));
+                    option.addEventListener('keydown', (e) => this.handleOptionKeydown(e, pen.value));
+                    dropdownContent.appendChild(option);
+                });
+            }
+        });
     }
 
     setPenValues(unitsPerMl, mlPerPen, penType = null) {
@@ -1221,6 +1266,110 @@ class InsulinCalculator {
         this.inlineDiscountContent.innerHTML = linksHTML;
         this.inlineDiscountLinks.classList.remove('hidden');
     }
+
+    // Custom dropdown methods
+    toggleDropdown() {
+        if (this.penSelectDropdown.classList.contains('hidden')) {
+            this.openDropdown();
+        } else {
+            this.closeDropdown();
+        }
+    }
+
+    openDropdown() {
+        this.penSelectDropdown.classList.remove('hidden');
+        this.penSelectButton.setAttribute('aria-expanded', 'true');
+        this.penSelectChevron.style.transform = 'rotate(180deg)';
+        
+        // Focus first option if available
+        const firstOption = this.penSelectDropdown.querySelector('[role="option"]');
+        if (firstOption) {
+            firstOption.focus();
+        }
+    }
+
+    closeDropdown() {
+        this.penSelectDropdown.classList.add('hidden');
+        this.penSelectButton.setAttribute('aria-expanded', 'false');
+        this.penSelectChevron.style.transform = 'rotate(0deg)';
+    }
+
+    handleButtonKeydown(e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.openDropdown();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.openDropdown();
+        }
+    }
+
+    handleOptionKeydown(e, penValue) {
+        const options = Array.from(this.penSelectDropdown.querySelectorAll('[role="option"]'));
+        const currentIndex = options.indexOf(e.target);
+
+        switch (e.key) {
+            case 'Enter':
+            case ' ':
+                e.preventDefault();
+                this.selectPen(penValue);
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                const nextIndex = (currentIndex + 1) % options.length;
+                options[nextIndex].focus();
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                const prevIndex = (currentIndex - 1 + options.length) % options.length;
+                options[prevIndex].focus();
+                break;
+            case 'Escape':
+                e.preventDefault();
+                this.closeDropdown();
+                this.penSelectButton.focus();
+                break;
+        }
+    }
+
+    selectPen(penValue) {
+        this.penSelect = penValue; // Set for compatibility
+        this.selectedPen = this.findPenByValue(penValue);
+        
+        if (penValue && this.selectedPen) {
+            // Update button label
+            const hasDiscount = this.penDiscountInfo[penValue] && 
+                               (this.penDiscountInfo[penValue].goodrx || 
+                                this.penDiscountInfo[penValue].lilly || 
+                                this.penDiscountInfo[penValue].novocare);
+            
+            this.penSelectLabel.textContent = `${hasDiscount ? '💰 ' : ''}${this.selectedPen.brand}`;
+            this.penSelectLabel.classList.remove('text-gray-500');
+            this.penSelectLabel.classList.add('text-gray-900');
+            
+            // Update form values
+            const penType = this.findPenType(penValue);
+            this.setPenValues(this.selectedPen.concentration, this.selectedPen.volume, penType);
+            this.toggleWeightBasedDosing(penType);
+            this.showPricingInfo(penValue, this.selectedPen);
+            this.checkExpirationWarning(penValue);
+            this.checkMaxDoseLimit();
+        } else {
+            // Reset to default
+            this.penSelectLabel.textContent = 'Select an insulin pen...';
+            this.penSelectLabel.classList.add('text-gray-500');
+            this.penSelectLabel.classList.remove('text-gray-900');
+            this.selectedPen = null;
+            
+            this.toggleWeightBasedDosing(null);
+            this.showPricingInfo(null, null);
+            this.hideExpirationWarning();
+        }
+        
+        this.closeDropdown();
+        this.penSelectButton.focus();
+    }
+
 }
 
 
