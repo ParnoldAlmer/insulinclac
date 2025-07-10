@@ -679,6 +679,12 @@ class InsulinCalculator {
         this.concentrationInput.value = unitsPerMl;
         this.volumePerPenInput.value = mlPerPen;
         
+        // Disable concentration and volume fields when pen is selected (fixed values)
+        this.concentrationInput.disabled = true;
+        this.volumePerPenInput.disabled = true;
+        this.concentrationInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+        this.volumePerPenInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+        
         if (penType === 'rapid' || penType === 'ultra-rapid') {
             this.doseFrequencyInput.value = 3;
         } else if (penType === 'basal') {
@@ -1403,6 +1409,12 @@ class InsulinCalculator {
             this.penSelectLabel.classList.add('text-gray-500');
             this.penSelectLabel.classList.remove('text-gray-900');
             this.selectedPen = null;
+            
+            // Re-enable concentration and volume fields when no pen is selected
+            this.concentrationInput.disabled = false;
+            this.volumePerPenInput.disabled = false;
+            this.concentrationInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            this.volumePerPenInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
             
             this.toggleWeightBasedDosing(null);
             this.showPricingInfo(null, null);
