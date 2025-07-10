@@ -736,6 +736,17 @@ class InsulinCalculator {
             this.updateSliderState();
             this.calculateDoseFromSlider();
         });
+        
+        // Handle iOS keyboard dismissal and auto-scroll
+        this.patientWeightInput.addEventListener('blur', () => {
+            // Small delay to ensure keyboard is dismissed
+            setTimeout(() => {
+                if (this.patientWeightInput.value && this.patientWeightInput.value.trim() !== '') {
+                    this.scrollToUnitsPerDose();
+                }
+            }, 300);
+        });
+        
         this.weightUnitToggle.addEventListener('click', () => this.toggleWeightUnit());
         
         // Add hover events for tooltip
@@ -1439,6 +1450,26 @@ class InsulinCalculator {
                 selectedCard.classList.remove('bg-white', 'border', 'border-gray-200');
                 selectedCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'border', 'border-blue-300');
             }
+        }
+    }
+
+    scrollToUnitsPerDose() {
+        // Find the Units per Dose input field
+        const unitsPerDoseField = document.getElementById('unitsPerDose');
+        if (unitsPerDoseField) {
+            // Scroll to the field with some offset to show it nicely
+            const elementTop = unitsPerDoseField.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementTop - 100; // 100px offset from top
+            
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+            
+            // Optional: Focus the field after scrolling
+            setTimeout(() => {
+                unitsPerDoseField.focus();
+            }, 600); // Wait for scroll animation to complete
         }
     }
 
