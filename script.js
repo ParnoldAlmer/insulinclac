@@ -21,7 +21,6 @@ class InsulinCalculator {
         this.doseFrequencyInput = document.getElementById('doseFrequency');
         this.concentrationInput = document.getElementById('concentration');
         this.volumePerPenInput = document.getElementById('volumePerPen');
-        this.calculateBtn = document.getElementById('calculateBtn');
         this.copyBtn = document.getElementById('copyBtn');
         
         this.disclaimerBtn = document.getElementById('disclaimerBtn');
@@ -146,7 +145,6 @@ class InsulinCalculator {
     }
 
     bindEvents() {
-        this.calculateBtn.addEventListener('click', () => this.calculate());
         this.copyBtn.addEventListener('click', () => this.copyPrescription());
         
         this.disclaimerBtn.addEventListener('click', () => this.showDisclaimer());
