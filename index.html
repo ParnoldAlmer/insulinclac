@@ -212,85 +212,91 @@
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label for="daySupply" class="block text-sm font-medium text-gray-800 mb-2">
-                        Day Supply
-                    </label>
-                    <input 
-                        type="number" 
-                        id="daySupply" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                        value="30"
-                        min="1"
-                    >
-                    <div id="daySupplyError" class="text-sm text-red-600 hidden"></div>
-                </div>
+                <!-- Dosing Information Row -->
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 space-y-2">
+                        <label for="unitsPerDose" class="block text-sm font-medium text-gray-800 mb-2">
+                            Units per Dose <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="unitsPerDose" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                            placeholder="e.g., 20"
+                            min="0.1"
+                            step="0.1"
+                            required
+                        >
+                        <div id="unitsPerDoseError" class="text-sm text-red-600 hidden"></div>
+                        <div id="maxDoseWarning" class="text-sm text-red-600 italic hidden">
+                            ⚠️ This dose exceeds the max deliverable in a single injection for this pen. Consider splitting the dose or using a different formulation.
+                        </div>
+                    </div>
 
-                <div class="space-y-2">
-                    <label for="unitsPerDose" class="block text-sm font-medium text-gray-800 mb-2">
-                        Units per Dose <span class="text-red-500">*</span>
-                    </label>
-                    <input 
-                        type="number" 
-                        id="unitsPerDose" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                        placeholder="e.g., 20"
-                        min="0.1"
-                        step="0.1"
-                        required
-                    >
-                    <div id="unitsPerDoseError" class="text-sm text-red-600 hidden"></div>
-                    <div id="maxDoseWarning" class="text-sm text-red-600 italic hidden">
-                        ⚠️ This dose exceeds the max deliverable in a single injection for this pen. Consider splitting the dose or using a different formulation.
+                    <div class="flex-1 space-y-2">
+                        <label for="doseFrequency" class="block text-sm font-medium text-gray-800 mb-2">
+                            Dose Frequency (doses per day)
+                        </label>
+                        <input 
+                            type="number" 
+                            id="doseFrequency" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                            value="1"
+                            min="1"
+                            step="1"
+                        >
+                        <div id="doseFrequencyError" class="text-sm text-red-600 hidden"></div>
+                    </div>
+
+                    <div class="flex-1 space-y-2">
+                        <label for="daySupply" class="block text-sm font-medium text-gray-800 mb-2">
+                            Day Supply
+                        </label>
+                        <input 
+                            type="number" 
+                            id="daySupply" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                            value="30"
+                            min="1"
+                        >
+                        <div id="daySupplyError" class="text-sm text-red-600 hidden"></div>
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label for="doseFrequency" class="block text-sm font-medium text-gray-800 mb-2">
-                        Dose Frequency (doses per day)
-                    </label>
-                    <input 
-                        type="number" 
-                        id="doseFrequency" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                        value="1"
-                        min="1"
-                        step="1"
-                    >
-                    <div id="doseFrequencyError" class="text-sm text-red-600 hidden"></div>
-                </div>
+                <!-- Insulin Properties Row -->
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="w-full md:w-1/2 space-y-2">
+                        <label for="concentration" class="block text-sm font-medium text-gray-800 mb-2">
+                            Insulin Concentration (units/mL) <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="concentration" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                            placeholder="Usually 100 units/mL"
+                            value="100"
+                            min="1"
+                            required
+                        >
+                        <div id="concentrationError" class="text-sm text-red-600 hidden"></div>
+                    </div>
 
-                <div class="space-y-2">
-                    <label for="concentration" class="block text-sm font-medium text-gray-800 mb-2">
-                        Insulin Concentration (units/mL) <span class="text-red-500">*</span>
-                    </label>
-                    <input 
-                        type="number" 
-                        id="concentration" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                        placeholder="Usually 100 units/mL"
-                        value="100"
-                        min="1"
-                        required
-                    >
-                    <div id="concentrationError" class="text-sm text-red-600 hidden"></div>
-                </div>
-
-                <div class="space-y-2">
-                    <label for="volumePerPen" class="block text-sm font-medium text-gray-800 mb-2">
-                        Volume per Pen (mL) <span class="text-red-500">*</span>
-                    </label>
-                    <input 
-                        type="number" 
-                        id="volumePerPen" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                        placeholder="e.g., 3"
-                        value="3"
-                        min="0.1"
-                        step="0.1"
-                        required
-                    >
-                    <div id="volumePerPenError" class="text-sm text-red-600 hidden"></div>
+                    <div class="w-full md:w-1/2 space-y-2">
+                        <label for="volumePerPen" class="block text-sm font-medium text-gray-800 mb-2">
+                            Volume per Pen (mL) <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="volumePerPen" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                            placeholder="e.g., 3"
+                            value="3"
+                            min="0.1"
+                            step="0.1"
+                            required
+                        >
+                        <div id="volumePerPenError" class="text-sm text-red-600 hidden"></div>
+                    </div>
                 </div>
 
                 <!-- Priming Loss Toggle -->
