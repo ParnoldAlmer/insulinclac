@@ -1,4 +1,4 @@
-const CACHE_NAME = 'insulin-calculator-v9';
+const CACHE_NAME = 'insulin-calculator-v10';
 const urlsToCache = [
   '/',
   '/index.html',
