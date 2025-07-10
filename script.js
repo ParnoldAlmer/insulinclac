@@ -742,7 +742,7 @@ class InsulinCalculator {
             // Small delay to ensure keyboard is dismissed
             setTimeout(() => {
                 if (this.patientWeightInput.value && this.patientWeightInput.value.trim() !== '') {
-                    this.scrollToUnitsPerDose();
+                    this.scrollToDosingSlider();
                 }
             }, 300);
         });
@@ -1453,23 +1453,20 @@ class InsulinCalculator {
         }
     }
 
-    scrollToUnitsPerDose() {
-        // Find the Units per Dose input field
-        const unitsPerDoseField = document.getElementById('unitsPerDose');
-        if (unitsPerDoseField) {
-            // Scroll to the field with some offset to show it nicely
-            const elementTop = unitsPerDoseField.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementTop - 100; // 100px offset from top
+    scrollToDosingSlider() {
+        // Find the dosing slider
+        const dosingSlider = document.getElementById('dosingSlider');
+        if (dosingSlider) {
+            // Scroll to show the slider with some offset to show it nicely
+            const elementTop = dosingSlider.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementTop - 150; // 150px offset from top to show label too
             
             window.scrollTo({
                 top: offsetPosition,
                 behavior: 'smooth'
             });
             
-            // Optional: Focus the field after scrolling
-            setTimeout(() => {
-                unitsPerDoseField.focus();
-            }, 600); // Wait for scroll animation to complete
+            // No auto-focus on slider since it's a range input and user should choose manually
         }
     }
 
