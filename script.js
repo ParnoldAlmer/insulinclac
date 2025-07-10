@@ -365,9 +365,7 @@ class InsulinCalculator {
         
         breakdown += `Pens Needed: ${pensNeeded}\n\n`;
         
-        const copayCardInfo = '💡 Most copay cards (e.g., Lantus, Tresiba) cover a 30-day supply based on daily dose — not the number of pens or boxes. The pharmacy will match your Sig with an appropriate fill.';
-        
-        return breakdown + copayCardInfo;
+        return breakdown;
     }
     
     generateRxSig(values, results) {
