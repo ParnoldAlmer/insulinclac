@@ -81,7 +81,7 @@ class InsulinCalculator {
             'admelog-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/admelog', text: 'GoodRx $35/month' },
                 amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' },
-                singlecare: { url: 'https://www.singlecare.com/prescription/admelog?q=Admelog', text: 'SingleCare' }
+                singlecare: { url: 'https://www.singlecare.com/prescription/admelog-solostar', text: 'SingleCare' }
             },
             'apidra-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/apidra', text: 'GoodRx $35/month' },
