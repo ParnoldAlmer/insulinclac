@@ -68,10 +68,11 @@ class InsulinCalculator {
         
         // Discount links for each pen category
         this.penDiscountInfo = {
-            // Sanofi pens - GoodRx $35/month + Amazon
+            // Sanofi pens - GoodRx $35/month + Amazon + SingleCare
             'lantus-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/lantus?label_override=lantus&form=carton&dosage=5-solostar-pens-of-3ml&quantity=1&drugId=37030', text: 'GoodRx $35/month' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' },
+                singlecare: { url: 'https://www.singlecare.com/prescription/lantus-solostar', text: 'SingleCare' }
             },
             'toujeo-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/toujeo', text: 'GoodRx $35/month' },
@@ -79,7 +80,8 @@ class InsulinCalculator {
             },
             'admelog-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/admelog', text: 'GoodRx $35/month' },
-                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' }
+                amazon: { url: 'https://www.aboutamazon.com/news/retail/amazon-pharmacy-insulin-coupons', text: 'Amazon' },
+                singlecare: { url: 'https://www.singlecare.com/prescription/admelog?q=Admelog', text: 'SingleCare' }
             },
             'apidra-solostar': {
                 goodrx: { url: 'https://www.goodrx.com/apidra', text: 'GoodRx $35/month' },
@@ -1297,6 +1299,19 @@ class InsulinCalculator {
                    rel="noopener noreferrer" 
                    class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
                     ${discountInfo.novocare.text}
+                </a>
+            `;
+        }
+        
+        // Add SingleCare link
+        if (discountInfo.singlecare) {
+            if (linksHTML) linksHTML += ' • ';
+            linksHTML += `
+                <a href="${discountInfo.singlecare.url}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                    ${discountInfo.singlecare.text}
                 </a>
             `;
         }
