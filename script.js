@@ -419,11 +419,11 @@ class InsulinCalculator {
         const rxSig = this.generateRxSig(values, results);
         if (this.sigGeneration) {
             this.sigGeneration.innerHTML = `
-                <div class="text-sm font-mono bg-gray-50 p-3 rounded border">
-                    <div class="font-bold mb-2">Prescription Sig:</div>
-                    <div>${rxSig.sig}</div>
-                    <div class="mt-2">${rxSig.disp}</div>
-                    <div>${rxSig.ndc}</div>
+                <div class="text-sm font-mono bg-gray-50 p-3 sm:p-4 rounded-md border border-gray-200">
+                    <div class="font-bold mb-2 text-gray-900">Prescription Sig:</div>
+                    <div class="text-gray-800">${rxSig.sig}</div>
+                    <div class="mt-2 text-gray-800">${rxSig.disp}</div>
+                    <div class="text-gray-800">${rxSig.ndc}</div>
                 </div>
             `;
         }
@@ -615,10 +615,12 @@ class InsulinCalculator {
                     
                     penCard.innerHTML = `
                         <div class="flex items-start space-x-3">
-                            <div class="flex-shrink-0 text-lg">💉</div>
+                            <div class="flex-shrink-0">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center space-x-2">
-                                    ${has35MonthDiscount ? '<div class="text-lg">💰</div>' : ''}
+                                    ${has35MonthDiscount ? '<span class="text-xs font-medium text-green-700 bg-green-50 px-1.5 py-0.5 rounded">$35/mo</span>' : ''}
                                     <div class="font-medium text-gray-900 truncate">${pen.brand}</div>
                                 </div>
                                 <div class="text-sm text-gray-600 mt-1">
@@ -1387,14 +1389,17 @@ class InsulinCalculator {
         this.selectedPen = this.findPenByValue(penValue);
         
         if (penValue && this.selectedPen) {
-            // Update button label - show 💰 for pens with $35/month pricing
-            const has35MonthDiscount = this.penDiscountInfo[penValue] && 
-                                     (this.penDiscountInfo[penValue].goodrx || this.penDiscountInfo[penValue].novocare);
-            
-            this.penSelectLabel.textContent = `${has35MonthDiscount ? '💰 ' : ''}${this.selectedPen.brand} (${this.selectedPen.generic})`;
+            // Update button label
+            this.penSelectLabel.textContent = `${this.selectedPen.brand} (${this.selectedPen.generic})`;
             this.penSelectLabel.classList.remove('text-gray-500');
             this.penSelectLabel.classList.add('text-gray-900');
-            
+
+            // Brief confirmation highlight on the select button
+            this.penSelectButton.classList.add('border-blue-500', 'ring-2', 'ring-blue-200');
+            setTimeout(() => {
+                this.penSelectButton.classList.remove('border-blue-500', 'ring-2', 'ring-blue-200');
+            }, 1200);
+
             // Update form values
             const penType = this.findPenType(penValue);
             this.setPenValues(this.selectedPen.concentration, this.selectedPen.volume, penType);
