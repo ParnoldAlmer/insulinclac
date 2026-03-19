@@ -95,4 +95,4 @@ Any static-file host works — GitHub Pages, Netlify, Vercel, S3 + CloudFront, e
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+CC BY-NC 4.0 — see [LICENSE](LICENSE).
